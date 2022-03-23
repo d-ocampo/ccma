@@ -52,6 +52,17 @@ dict_nivel_educativo={4: "Universitario",
     8:"Otro"   
     }
 
+#Diccionario de tipos de documentos
+dict_tipo_doc={1:'Cedula de ciudadanía',
+    2:'Cedula de extranjería',
+    3:'Pasaporte',
+    4:'Tarjeta de identidad',
+    5:'NIT',
+    6:'Empresa Extranjera',
+    7:'Número único de identificación personal NUIP',
+    8:'Registro Civil'
+                }
+
 
 ################################
 ### Funciones de arreglo data ##
@@ -105,7 +116,10 @@ def validar_tipo_asistente(palabra):
     else:
         return 'INDEPENDIENTE'
 
-
+#Función para devolver la llave de un diccionario
+def devolver_llave(diccionario, item):
+    res=list(filter(lambda x: x[1]==item,list(diccionario.items())))
+    return res[0][0]
 
 
 #####################################
@@ -220,10 +234,44 @@ def cargar_interes():
 
 #### 3. Contactos ##############
 
-def cargar_contactos:
-    
-contactos=pd.read_excel(data_path+'Contactos.xlsx')
+def cargar_contactos(devolver_llave,dict_tipo_doc):
+    start_time = time.time()
+    print('Inicia carga de contactos')
+    #Cargar los datos
+    contactos=pd.read_excel(data_path+'Contactos.xlsx')
+    #modificar las columnas
+    contactos.columns=[col.upper().strip() for col in contactos.columns]
+    #Cambiar nombre de columna cedula
+    contactos.rename(columns={'NÚMERO DE DOCUMENTO':'CEDULA'},inplace=True)
+    #Arreglar el tipo de identificación
+    contactos['TIPO DE DOCUMENTO']=contactos['TIPO DE DOCUMENTO'].replace('C','Cedula de ciudadanía')
+    #Llenar el tipo de contacto
+    contactos['TIPO DE CONTACTO'].fillna('Otro',inplace=True)
+    #Resumir por número de cédula
+    contactos=contactos.groupby(['TIPO DE DOCUMENTO','CEDULA']).agg(
+        {'NOMBRE COMPLETO':['first','count'],
+         'DIRECCIÓN':'first', 
+         'CIUDAD':'first', 
+         'DEPARTAMENTO':'first', 
+         'PAÍS':'first', 
+         'TIPO DE CONTACTO':'first',
+         'MIEMBRO DE LA JUNTA DIRECTIVA CCMA':'max'}
+        )
+    #MOdificar índices de filas y columnas
+    contactos.columns=['NOMBRE COMPLETO','CANTIDAD_LLAMADAS', 'DIRECCIÓN', 'CIUDAD', 'DEPARTAMENTO', 'PAÍS',
+           'TIPO DE CONTACTO', 'MIEMBRO DE LA JUNTA DIRECTIVA CCMA']
+    contactos.reset_index(inplace=True)
+    #Arreglar cédula    
+    contactos['CEDULA_NEW'] = contactos['CEDULA'].apply(lambda x: "".join(re.findall('\d+', str(x))))
+    contactos['CEDULA_NEW'] = contactos.apply(lambda x: "".join(re.findall('\d+', str(x['NOMBRE COMPLETO']))) if x['CEDULA_NEW'] == "" else x['CEDULA_NEW'], axis = 1)
+    contactos['CEDULA_NEW'] = contactos['CEDULA_NEW'].apply(lambda x: 0 if x == "" else int(x))
+   
+    #Cambiar el tipo doc por la codificación
+    contactos['TIPO DE DOCUMENTO']=contactos['TIPO DE DOCUMENTO'].apply(lambda x: devolver_llave(dict_tipo_doc,x))
 
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    return contactos
 
 
 
@@ -237,6 +285,10 @@ data_exp=arreglar_data_exp(data_exp,exp_cols,dict_cargo)
 
 #### 2. Temas de interés ###############
 interes=cargar_interes()
+
+#### 3. Contactos
+contactos=cargar_contactos(devolver_llave,dict_tipo_doc)
+
 
 
 ##################################
@@ -257,9 +309,10 @@ cedulas=unique(cedulas)
 
 dict_personas={}
 # Rellenar el diccionario de cédulas
-for ced in cedulas:
+for ced in cedulas[0:100]:
     dict_personas[ced]={'INTERES':interes[interes['CEDULA_NEW']==ced].to_dict('records'),
                         'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ced].to_dict('records')}
+    
     
     
 import sys
