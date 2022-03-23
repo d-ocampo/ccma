@@ -60,6 +60,14 @@ dict_nivel_educativo={4: "Universitario",
 
 maestra_interes=pd.read_excel(data_path+"Maestra Temas Interes.xlsx")
 
+# function to get unique values
+def unique(list1):
+    # insert the list to the set
+    list_set = set(list1)
+    # convert the set to the list
+    unique_list = (list(list_set))
+    return unique_list
+
 
 #Crear diccionario de homolagación de cargos
 def diccionario_cargos(ruta):
@@ -176,29 +184,45 @@ def arreglar_data_exp(data_experience,exp_cols,dict_cargo):
 #### 2. Temas de interés ##############
 
 
-def cargar_interes()
+def cargar_interes():
+    start_time = time.time()
+    print('Inicia carga de temas de interés')
+    #Cargar la tabla
+    temas_interes=pd.read_excel(data_path+'TemasInteres.xlsx')
+    #reemplazar columnas
+    temas_interes.columns=[col.upper() for col in temas_interes.columns]
+    
+    #reemplazar nombre de cédula
+    temas_interes.rename(columns={'NRO_CEDULA':'CEDULA'},inplace=True)
+    
+    # Correcciones sobre el nÃºmero de cÃ©dula
+    temas_interes['CEDULA_NEW'] = temas_interes['CEDULA'].apply(lambda x: "".join(re.findall('\d+', str(x))))
+    temas_interes['CEDULA_NEW'] = temas_interes.apply(lambda x: "".join(re.findall('\d+', str(x['NOMBRE']))) if x['CEDULA_NEW'] == "" else x['CEDULA_NEW'], axis = 1)
+    temas_interes['CEDULA_NEW'] = temas_interes['CEDULA_NEW'].apply(lambda x: 0 if x == "" else int(x))
+    
+    #Poner en mayúscula los nombres
+    temas_interes['NOMBRE']=temas_interes['NOMBRE'].apply(lambda x: str(x).upper()) 
+    temas_interes['APELLIDO']= temas_interes['NOMBRE'].apply(lambda x: str(x).upper()) 
+    
+    #Reemplazar cargo
+    temas_interes['CARGO_HOMOLOGO']=temas_interes['CARGO'].apply(lambda x: homologar_cargo(dict_cargo,str(x)))
+    
+    #Arreglar nivel educativo
+    temas_interes['NIVEL_EDUCATIVO']=temas_interes['NIVEL_EDUCATIVO'].fillna(8).apply(lambda x: x if str(x).isdigit() else 8).astype(int).apply(lambda x: x if x in list(dict_nivel_educativo.keys()) else 8)
+    temas_interes['NOMB_NIVEL_EDUCATIVO']=temas_interes['NIVEL_EDUCATIVO'].apply(lambda x: dict_nivel_educativo[x])
+    
+    #Arreglar tipo asistente
+    temas_interes['TIPO_ASISTENTE']=temas_interes['TIPO_ASISTENTE'].fillna('OTRO').apply(lambda x: 'OTRO' if str(x).isdigit() else validar_tipo_asistente(x).upper() )
 
-#Cargar la tabla
-temas_interes=pd.read_excel(data_path+'TemasInteres.xlsx')
-#reemplazar columnas
-temas_interes.columns=[col.upper() for col in temas_interes.columns]
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    return temas_interes
 
-#reemplazar nombre de cédula
-temas_interes.rename(columns={'NRO_CEDULA':'CEDULA'},inplace=True)
+#### 3. Contactos ##############
 
-#Poner en mayúscula los nombres
-temas_interes['NOMBRE']=temas_interes['NOMBRE'].apply(lambda x: str(x).upper()) 
-temas_interes['APELLIDO']= temas_interes['NOMBRE'].apply(lambda x: str(x).upper()) 
-
-#Reemplazar cargo
-temas_interes['CARGO_HOMOLOGO']=temas_interes['CARGO'].apply(lambda x: homologar_cargo(dict_cargo,str(x)))
-
-#Arreglar nivel educativo
-temas_interes['NIVEL_EDUCATIVO']=temas_interes['NIVEL_EDUCATIVO'].fillna(8).apply(lambda x: x if str(x).isdigit() else 8).astype(int).apply(lambda x: x if x in list(dict_nivel_educativo.keys()) else 8)
-temas_interes['NOMB_NIVEL_EDUCATIVO']=temas_interes['NIVEL_EDUCATIVO'].apply(lambda x: dict_nivel_educativo[x])
-
-#Arreglar tipo asistente
-temas_interes['TIPO_ASISTENTE']=temas_interes['TIPO_ASISTENTE'].fillna('OTRO').apply(lambda x: 'OTRO' if str(x).isdigit() else validar_tipo_asistente(x).upper() )
+def cargar_contactos:
+    
+pd.read_excel(data_path+'')
 
 
 
@@ -211,7 +235,28 @@ temas_interes['TIPO_ASISTENTE']=temas_interes['TIPO_ASISTENTE'].fillna('OTRO').a
 data_exp=generar_data_exp(exp_cols)
 data_exp=arreglar_data_exp(data_exp,exp_cols,dict_cargo)
 
+#### 2. Temas de interés ###############
+interes=cargar_interes()
 
 
+##################################
+### Funciones de creación de BD ##
+##################################
 
+#### Creación de las llaves
 
+## Llave de la bd personas 
+cedulas=[]
+
+cedulas.extend(list(data_exp['CEDULA_NEW'].unique()))
+cedulas.extend(list(interes['CEDULA_NEW'].unique()))
+
+cedulas=unique(cedulas)
+
+### Creación de los diccionarios
+
+dict_personas={}
+# Rellenar el diccionario de cédulas
+for ced in cedulas:
+    dict_personas[ced]={'INTERES':interes[interes['CEDULA_NEW']==ced].to_dict('records'),
+                        'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ced].to_dict('records')}
