@@ -385,6 +385,78 @@ def arreglar_demanda(demanda):
     print(f"Tiempo transcurrido: {time_lapse}")
     return demanda,eventos
 
+
+def carga_llamadas():
+    start_time = time.time()
+    print('Inicia carga de llamada')
+    
+    #Cargar los datos
+    llamada=pd.read_excel(data_path+'LlamadasTMK.xlsx')
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    return llamada
+
+
+def arreglo_llamadas(llamada):
+    #cambiar columnas
+    llamada.columns=[col.upper().strip() for col in llamada.columns]
+    
+    llamada=llamada.rename(columns={'NIT':'CEDULA'})
+
+    #cambiar cedula a estandar    
+    llamada['CEDULA_NEW'] = llamada['CEDULA'].apply(lambda x: "".join(re.findall('\d+', str(x))))
+    llamada['CEDULA_NEW'] = llamada.apply(lambda x: "".join(re.findall('\d+', str(x['NOMBRE Y APELLIDO NUEVO CONTACTO1']))) if x['CEDULA_NEW'] == "" else x['CEDULA_NEW'], axis = 1)
+    llamada['CEDULA_NEW'] = llamada['CEDULA_NEW'].apply(lambda x: 0 if x == "" else int(x))
+           
+    #cambiar el tipo de documento
+    llamada['TIPO DE DOCUMENTO']=llamada['CEDULA_NEW'].astype(int).apply(lambda x: 5 if str(x)[0] in ["8","9"] and len(str(x))==9  else 1)
+    
+    #cambiar la fecha a str
+    llamada['FECHA LLAMADA 1']=llamada['FECHA LLAMADA 1'].astype(str)
+    
+    #agrupación por tipo de cédula y número
+    llamada=llamada.groupby(['TIPO DE DOCUMENTO','CEDULA_NEW']).agg(
+        {'CEDULA':['count','first'], 
+         'MATRICULA':'first', 
+         'FECHA LLAMADA 1':','.join, 
+         'RESPONSABLE1':','.join,
+         'ESTADO DEL TELEMERCADEO1':'first', 
+         'NOMBRE Y APELLIDO NUEVO CONTACTO1':'first',
+         'CARGO1':'first', 
+         'NUEVO TELÉFONO1':'first', 
+         'NUEVO E-MAIL1':'first', 
+         'INTENCIÓN RENOVACIÓN1':'first',
+         'AGENDA CITA RENOV1':'first', 
+         'TIPOSERVICIO':'first', 
+         'TEMA DEL SERVICIO1':'first',
+         'COMENTARIOS1':'first', 
+         'UTILIDAD LLAMADA1':'first', 
+         'DURACIÓN':'first', 
+         'CONTADOR CONTACTADO':'first',
+         'CONTACTO PERGAMINO':'first', 
+         'RAZÓN SOCIAL':'first', 
+         'CANAL POR EL QUE RENOVARÁ':'first',
+         'NOMBRE PERGAMINO':'first', 
+         'ENTRANTE':'first', 
+         'TEXTO':'first', 
+         'TIPO DE ELEMENTO':'first',
+         'RUTA DE ACCESO':'first'
+         }
+        ).reset_index()
+    
+    #cambiar el nombre de las columnas
+    llamada.columns=['TIPO DE DOCUMENTO','CEDULA_NEW','NO_LLAMADAS','CEDULA', 
+                     'MATRICULA', 'FECHA LLAMADA 1', 'RESPONSABLE1',
+           'ESTADO DEL TELEMERCADEO1', 'NOMBRE Y APELLIDO NUEVO CONTACTO1',
+           'CARGO1', 'NUEVO TELÉFONO1', 'NUEVO E-MAIL1', 'INTENCIÓN RENOVACIÓN1',
+           'AGENDA CITA RENOV1', 'TIPOSERVICIO', 'TEMA DEL SERVICIO1',
+           'COMENTARIOS1', 'UTILIDAD LLAMADA1', 'DURACIÓN', 'CONTADOR CONTACTADO',
+           'CONTACTO PERGAMINO', 'RAZÓN SOCIAL', 'CANAL POR EL QUE RENOVARÁ',
+           'NOMBRE PERGAMINO', 'ENTRANTE', 'TEXTO', 'TIPO DE ELEMENTO',
+           'RUTA DE ACCESO']
+    return llamada
+
+
 ##################################
 ### Funciones de carga de data ###
 ##################################
@@ -406,8 +478,14 @@ def cargar_todo():
 
     demanda=cargar_demanda()
     demanda,eventos=arreglar_demanda(demanda)
+    
+    #### 5. Llamadas ######################
+    llamada=carga_llamadas()
+    llamada=arreglo_llamadas(llamada)
+    
 
     return data_exp, interes, contactos, demanda, eventos
+
 
 
 ##################################
