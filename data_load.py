@@ -151,6 +151,28 @@ def devolver_llave(diccionario, item):
     res=list(filter(lambda x: x[1]==item,list(diccionario.items())))
     return res[0][0]
 
+# Función para eliminar registros con n_percent de nulos
+def nulls_filter(n, data):
+
+    # Cantidad de columnas
+    cols_size = data.shape[1]
+
+    # Cantidad de columnas con nulos
+    data = data.replace("Otro", np.nan).replace("", np.nan)
+    data['nulls_by_row'] = data.isnull().sum(axis = 1)
+
+    # Porcentaje aceptable de eliminación de filas según cantidad de filas nulas
+    percent_accept = n
+
+    data['percent'] = data.apply(lambda x: x['nulls_by_row']/cols_size, axis = 1)
+    data['mantener'] = data['percent'].apply(lambda x: 1 if x <= percent_accept else 0)
+    data['mantener'].value_counts()
+
+    # Filtrar filas aceptables
+    data = data[data['mantener']==1]
+    data.drop(['nulls_by_row', 'mantener', 'percent'], inplace = True, axis = 1)
+    return data
+
 
 #####################################
 ### Funciones de minería de datos ###
@@ -461,32 +483,38 @@ def arreglo_llamadas(llamada):
 ### Funciones de carga de data ###
 ##################################
 
-def cargar_todo():
+def cargar_todo(n):
+
     #### 1. Data experience ################
     data_exp=generar_data_exp(exp_cols)
     data_exp=arreglar_data_exp(data_exp,exp_cols,dict_cargo)
+    data_exp=nulls_filter(n, data_exp)
 
     #### 2. Temas de interés ###############
     interes=cargar_interes()
     interes=arreglar_interes(interes)
+    interes=nulls_filter(n, interes)
 
     #### 3. Contactos #####################
     contactos=cargar_contactos()
     contactos=arreglar_contactos(contactos,devolver_llave,dict_tipo_doc)
+    contactos=nulls_filter(n, contactos)
 
     #### 4. Demanda #######################
 
     demanda=cargar_demanda()
     demanda,eventos=arreglar_demanda(demanda)
-    
+    demanda=nulls_filter(n, demanda)
+
+
     #### 5. Llamadas ######################
     llamada=carga_llamadas()
     llamada=arreglo_llamadas(llamada)
-    
+    llamada=nulls_filter(n, llamada)
 
     return [data_exp, interes, contactos, demanda, eventos, llamada]
 
-
+cargar_todo(0.35)
 
 ##################################
 ### Funciones de creación de BD ##
