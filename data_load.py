@@ -484,7 +484,7 @@ def cargar_todo():
     llamada=arreglo_llamadas(llamada)
     
 
-    return [data_exp, interes, contactos, demanda, eventos]
+    return [data_exp, interes, contactos, demanda, eventos, llamada]
 
 
 
