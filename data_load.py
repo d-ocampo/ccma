@@ -17,6 +17,10 @@ from os.path import isfile, join, isdir  # Para manipular archivos
 import json # Para manipulación de diccionarios
 ########################################################################
 
+#################################
+### 0. Fixed Data ###############
+#################################
+
 # Rutas
 data_path = os.getcwd()+"/data/"
 exp_path = "Experiencia del cliente/"
@@ -64,12 +68,38 @@ dict_tipo_doc={1:'Cedula de ciudadanía',
                 }
 
 
+#Cruce entre interés demanda e intereses
+#Datos de demanda
+# Registros                              117076
+# Gerencia y Administración               75081
+# Jurídica                                66807
+# Innovación y Transformación Digital     39582
+# Contabilidad y Finanzas                 32321
+# Mercadeo y Servicio al Cliente          27926
+# Ventas                                  20834
+# Proyectos y servicios                   16998
+# Gestión Humana                          14980
+# Productividad                           11122
+# Economía                                 8372
+# Negocios y networking                    7467
+# Gobierno Corporativo                     5372
+# Internacionalización                     4482
+# Música                                   3581
+# Desarrollo del Ser                       1566
+# Gobierno                                 1513
+# Literatura                                810
+# Cine                                      745
+# Arte                                      736
+# Solución de Conflictos                    706
+# Propiedad intelectual                     146
+# Sostenibilidad                            138
+
+# maestra_interes=pd.read_excel(data_path+"Maestra Temas Interes.xlsx")
+
 ################################
 ### Funciones de arreglo data ##
 ################################
 
-
-maestra_interes=pd.read_excel(data_path+"Maestra Temas Interes.xlsx")
 
 # function to get unique values
 def unique(list1):
@@ -80,7 +110,7 @@ def unique(list1):
     return unique_list
 
 
-#Crear diccionario de homolagación de cargos
+#Crear diccionario de homolagación de cargos a partir del excel
 def diccionario_cargos(ruta):
     areas_homologar=pd.read_excel(ruta)
     areas_homologar.index=areas_homologar['Área de cargo']
@@ -154,8 +184,7 @@ def generar_data_exp(exp_cols):
 
     return data_experience
 
-########################################################################
-
+# función para arreglar data de experiencia
 def arreglar_data_exp(data_experience,exp_cols,dict_cargo):
     # Inicio de la ejecución
     start_time = time.time()
@@ -197,12 +226,21 @@ def arreglar_data_exp(data_experience,exp_cols,dict_cargo):
 
 #### 2. Temas de interés ##############
 
-
+#Cargar las bases de interés
 def cargar_interes():
     start_time = time.time()
     print('Inicia carga de temas de interés')
     #Cargar la tabla
     temas_interes=pd.read_excel(data_path+'TemasInteres.xlsx')
+    #tiempo
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    return temas_interes
+
+# Arreglar la tabla de interés
+def arreglar_interes(temas_interes):
+    start_time = time.time()
+    print('Inicia arreglo de temas de interés')
     #reemplazar columnas
     temas_interes.columns=[col.upper() for col in temas_interes.columns]
     
@@ -234,11 +272,19 @@ def cargar_interes():
 
 #### 3. Contactos ##############
 
-def cargar_contactos(devolver_llave,dict_tipo_doc):
+def cargar_contactos():
     start_time = time.time()
     print('Inicia carga de contactos')
     #Cargar los datos
     contactos=pd.read_excel(data_path+'Contactos.xlsx')
+    
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    return contactos
+    
+def arreglar_contactos(contactos,devolver_llave,dict_tipo_doc):
+    start_time = time.time()
+    print('Inicia arreglo de contactos')
     #modificar las columnas
     contactos.columns=[col.upper().strip() for col in contactos.columns]
     #Cambiar nombre de columna cedula
@@ -273,7 +319,65 @@ def cargar_contactos(devolver_llave,dict_tipo_doc):
     print(f"Tiempo transcurrido: {time_lapse}")
     return contactos
 
+##### 4. Demanda #########
 
+def cargar_demanda():
+    
+start_time = time.time()
+print('Inicia carga de contactos')
+#Cargar los datos
+demanda=pd.read_excel(data_path+'Demanda de los servicios.xlsx')
+
+time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+print(f"Tiempo transcurrido: {time_lapse}")
+
+#Modificar las columnas de demanda
+demanda.columns=[col.upper().strip() for col in demanda.columns]
+
+#eliminar datos de los eventos
+demanda_personas=demanda[['FECHAINSCRIPCIÓN', 'REGIÓN', 'IDENTASISTENTE', 'NOMBREASISTENTE',
+       'NITRE', 'RAZÓNSOCIAL', 'CARGO', 'TIPOACTIVIDAD', 'FORMATONOMBRE']]
+
+#Cambiar todo a string
+demanda_personas=demanda_personas.fillna('')
+
+#Cambiar fecha por string
+demanda_personas['FECHAINSCRIPCIÓN']=demanda_personas['FECHAINSCRIPCIÓN'].astype(str)
+demanda_personas['FORMATONOMBRE']=demanda_personas['FORMATONOMBRE'].astype(str)
+
+#agrupar preferencias de la persona
+demanda_personas=demanda_personas.groupby('IDENTASISTENTE').agg(
+    {'FECHAINSCRIPCIÓN':','.join,
+     'REGIÓN':','.join,
+     'NOMBREASISTENTE':'first',
+     'NITRE':'first',
+     'RAZÓNSOCIAL':'first',
+     'CARGO':'first',
+     # se propone, pero se puede cambiar
+     'TIPOACTIVIDAD':','.join,
+     'FORMATONOMBRE':','.join
+     }
+    ).reset_index()
+
+#Crear la validación de cargos
+demanda_personas['CARGO_HOMOLOGO']=demanda_personas['CARGO'].apply(lambda x: homologar_cargo(dict_cargo,str(x)))
+
+#Cambiar nombre de identifiación
+demanda_personas.rename(columns={'IDENTASISTENTE':'CEDULA'},inplace=True)
+
+
+#Arreglar cédula
+demanda_personas['CEDULA_NEW'] = demanda_personas['CEDULA'].apply(lambda x: "".join(re.findall('\d+', str(x))))
+demanda_personas['CEDULA_NEW'] = demanda_personas.apply(lambda x: "".join(re.findall('\d+', str(x['NOMBREASISTENTE']))) if x['CEDULA_NEW'] == "" else x['CEDULA_NEW'], axis = 1)
+demanda_personas['CEDULA_NEW'] = demanda_personas['CEDULA_NEW'].apply(lambda x: 0 if x == "" else int(x))
+   
+
+
+#Agurpar los eventos que se ha asistido
+eventos=demanda[['ID','NOMBRE', 'LUGAR', 'PROYECTO', 'LÍNEA', 'TEMA','REGIÓN']]
+eventos=eventos.drop_duplicates(subset='ID')
+
+demanda['FormatoNombre'].value_counts()
 
 ##################################
 ### Funciones de carga de data ###
@@ -285,10 +389,13 @@ data_exp=arreglar_data_exp(data_exp,exp_cols,dict_cargo)
 
 #### 2. Temas de interés ###############
 interes=cargar_interes()
+interes=arreglar_interes(interes)
 
 #### 3. Contactos
-contactos=cargar_contactos(devolver_llave,dict_tipo_doc)
+contactos=cargar_contactos()
+contactos=arreglar_contactos(contactos,devolver_llave,dict_tipo_doc)
 
+#### 4. 
 
 
 ##################################
