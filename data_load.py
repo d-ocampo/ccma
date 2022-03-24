@@ -389,22 +389,25 @@ def arreglar_demanda(demanda):
 ### Funciones de carga de data ###
 ##################################
 
-#### 1. Data experience ################
-data_exp=generar_data_exp(exp_cols)
-data_exp=arreglar_data_exp(data_exp,exp_cols,dict_cargo)
+def cargar_todo():
+    #### 1. Data experience ################
+    data_exp=generar_data_exp(exp_cols)
+    data_exp=arreglar_data_exp(data_exp,exp_cols,dict_cargo)
 
-#### 2. Temas de interés ###############
-interes=cargar_interes()
-interes=arreglar_interes(interes)
+    #### 2. Temas de interés ###############
+    interes=cargar_interes()
+    interes=arreglar_interes(interes)
 
-#### 3. Contactos #####################
-contactos=cargar_contactos()
-contactos=arreglar_contactos(contactos,devolver_llave,dict_tipo_doc)
+    #### 3. Contactos #####################
+    contactos=cargar_contactos()
+    contactos=arreglar_contactos(contactos,devolver_llave,dict_tipo_doc)
 
-#### 4. Demanda #######################
+    #### 4. Demanda #######################
 
-demanda=cargar_demanda()
-demanda,eventos=arreglar_demanda(damanda)
+    demanda=cargar_demanda()
+    demanda,eventos=arreglar_demanda(demanda)
+
+    return data_exp, interes, contactos, demanda, eventos
 
 
 ##################################
@@ -414,36 +417,35 @@ demanda,eventos=arreglar_demanda(damanda)
 #### Creación de las llaves
 
 ## Llave de la bd personas 
-cedulas=[]
+# cedulas=[]
 
-cedulas.extend(list(data_exp['CEDULA_NEW'].unique()))
-cedulas.extend(list(interes['CEDULA_NEW'].unique()))
+# cedulas.extend(list(data_exp['CEDULA_NEW'].unique()))
+# cedulas.extend(list(interes['CEDULA_NEW'].unique()))
 
-cedulas=unique(cedulas)
+# cedulas=unique(cedulas)
 
-### Creación de los diccionarios
+# ### Creación de los diccionarios
 
-dict_personas={}
-# Rellenar el diccionario de cédulas
-for ced in cedulas[0:100]:
-    dict_personas[ced]={'INTERES':interes[interes['CEDULA_NEW']==ced].to_dict('records'),
-                        'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ced].to_dict('records')}
+# dict_personas={}
+# # Rellenar el diccionario de cédulas
+# for ced in cedulas[0:100]:
+#     dict_personas[ced]={'INTERES':interes[interes['CEDULA_NEW']==ced].to_dict('records'),
+#                         'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ced].to_dict('records')}
     
     
+# import sys
+# tamano=sys.getsizeof(dict_personas)    
+
+
+# import math
+
+# def convert_size(size_bytes):
+#    if size_bytes == 0:
+#        return "0B"
+#    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+#    i = int(math.floor(math.log(size_bytes, 1024)))
+#    p = math.pow(1024, i)
+#    s = round(size_bytes / p, 2)
+#    return "%s %s" % (s, size_name[i])
     
-import sys
-tamano=sys.getsizeof(dict_personas)    
-
-
-import math
-
-def convert_size(size_bytes):
-   if size_bytes == 0:
-       return "0B"
-   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-   i = int(math.floor(math.log(size_bytes, 1024)))
-   p = math.pow(1024, i)
-   s = round(size_bytes / p, 2)
-   return "%s %s" % (s, size_name[i])
-    
-convert_size(tamano)
+# convert_size(tamano)
