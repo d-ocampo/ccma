@@ -322,62 +322,68 @@ def arreglar_contactos(contactos,devolver_llave,dict_tipo_doc):
 ##### 4. Demanda #########
 
 def cargar_demanda():
+    start_time = time.time()
+    print('Inicia carga de demanda')
+    #Cargar los datos
+    demanda=pd.read_excel(data_path+'Demanda de los servicios.xlsx')
     
-start_time = time.time()
-print('Inicia carga de contactos')
-#Cargar los datos
-demanda=pd.read_excel(data_path+'Demanda de los servicios.xlsx')
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    return demanda
 
-time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
-print(f"Tiempo transcurrido: {time_lapse}")
-
-#Modificar las columnas de demanda
-demanda.columns=[col.upper().strip() for col in demanda.columns]
-
-#eliminar datos de los eventos
-demanda_personas=demanda[['FECHAINSCRIPCIÓN', 'REGIÓN', 'IDENTASISTENTE', 'NOMBREASISTENTE',
-       'NITRE', 'RAZÓNSOCIAL', 'CARGO', 'TIPOACTIVIDAD', 'FORMATONOMBRE']]
-
-#Cambiar todo a string
-demanda_personas=demanda_personas.fillna('')
-
-#Cambiar fecha por string
-demanda_personas['FECHAINSCRIPCIÓN']=demanda_personas['FECHAINSCRIPCIÓN'].astype(str)
-demanda_personas['FORMATONOMBRE']=demanda_personas['FORMATONOMBRE'].astype(str)
-
-#agrupar preferencias de la persona
-demanda_personas=demanda_personas.groupby('IDENTASISTENTE').agg(
-    {'FECHAINSCRIPCIÓN':','.join,
-     'REGIÓN':','.join,
-     'NOMBREASISTENTE':'first',
-     'NITRE':'first',
-     'RAZÓNSOCIAL':'first',
-     'CARGO':'first',
-     # se propone, pero se puede cambiar
-     'TIPOACTIVIDAD':','.join,
-     'FORMATONOMBRE':','.join
-     }
-    ).reset_index()
-
-#Crear la validación de cargos
-demanda_personas['CARGO_HOMOLOGO']=demanda_personas['CARGO'].apply(lambda x: homologar_cargo(dict_cargo,str(x)))
-
-#Cambiar nombre de identifiación
-demanda_personas.rename(columns={'IDENTASISTENTE':'CEDULA'},inplace=True)
-
-
-#Arreglar cédula
-demanda_personas['CEDULA_NEW'] = demanda_personas['CEDULA'].apply(lambda x: "".join(re.findall('\d+', str(x))))
-demanda_personas['CEDULA_NEW'] = demanda_personas.apply(lambda x: "".join(re.findall('\d+', str(x['NOMBREASISTENTE']))) if x['CEDULA_NEW'] == "" else x['CEDULA_NEW'], axis = 1)
-demanda_personas['CEDULA_NEW'] = demanda_personas['CEDULA_NEW'].apply(lambda x: 0 if x == "" else int(x))
-   
-
-
-#Agurpar los eventos que se ha asistido
-eventos=demanda[['ID','NOMBRE', 'LUGAR', 'PROYECTO', 'LÍNEA', 'TEMA','REGIÓN']]
-eventos=eventos.drop_duplicates(subset='ID')
-
-demanda['FormatoNombre'].value_counts()
+def arreglar_demanda(demanda):
+    start_time = time.time()
+    print('Inicia arreglo de demanda')
+    #Modificar las columnas de demanda
+    demanda.columns=[col.upper().strip() for col in demanda.columns]
+    
+    #eliminar datos de los eventos
+    demanda_personas=demanda[['FECHAINSCRIPCIÓN', 'REGIÓN', 'IDENTASISTENTE', 'NOMBREASISTENTE',
+           'NITRE', 'RAZÓNSOCIAL', 'CARGO', 'TIPOACTIVIDAD', 'FORMATONOMBRE']]
+    
+    #Cambiar todo a string
+    demanda_personas=demanda_personas.fillna('')
+    
+    #Cambiar fecha por string
+    demanda_personas['FECHAINSCRIPCIÓN']=demanda_personas['FECHAINSCRIPCIÓN'].astype(str)
+    demanda_personas['FORMATONOMBRE']=demanda_personas['FORMATONOMBRE'].astype(str)
+    
+    #agrupar preferencias de la persona
+    demanda_personas=demanda_personas.groupby('IDENTASISTENTE').agg(
+        {'FECHAINSCRIPCIÓN':','.join,
+         'REGIÓN':','.join,
+         'NOMBREASISTENTE':'first',
+         'NITRE':'first',
+         'RAZÓNSOCIAL':'first',
+         'CARGO':'first',
+         # se propone, pero se puede cambiar
+         'TIPOACTIVIDAD':','.join,
+         'FORMATONOMBRE':','.join
+         }
+        ).reset_index()
+    
+    #Crear la validación de cargos
+    demanda_personas['CARGO_HOMOLOGO']=demanda_personas['CARGO'].apply(lambda x: homologar_cargo(dict_cargo,str(x)))
+    
+    #Cambiar nombre de identifiación
+    demanda_personas.rename(columns={'IDENTASISTENTE':'CEDULA'},inplace=True)
+    
+    
+    #Arreglar cédula
+    demanda_personas['CEDULA_NEW'] = demanda_personas['CEDULA'].apply(lambda x: "".join(re.findall('\d+', str(x))))
+    demanda_personas['CEDULA_NEW'] = demanda_personas.apply(lambda x: "".join(re.findall('\d+', str(x['NOMBREASISTENTE']))) if x['CEDULA_NEW'] == "" else x['CEDULA_NEW'], axis = 1)
+    demanda_personas['CEDULA_NEW'] = demanda_personas['CEDULA_NEW'].apply(lambda x: 0 if x == "" else int(x))
+       
+    
+    
+    #Agurpar los eventos que se ha asistido
+    eventos=demanda[['ID','NOMBRE', 'LUGAR', 'PROYECTO', 'LÍNEA', 'TEMA','REGIÓN']]
+    eventos=eventos.drop_duplicates(subset='ID')
+    
+    #tiempo
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    return demanda,eventos
 
 ##################################
 ### Funciones de carga de data ###
@@ -391,11 +397,14 @@ data_exp=arreglar_data_exp(data_exp,exp_cols,dict_cargo)
 interes=cargar_interes()
 interes=arreglar_interes(interes)
 
-#### 3. Contactos
+#### 3. Contactos #####################
 contactos=cargar_contactos()
 contactos=arreglar_contactos(contactos,devolver_llave,dict_tipo_doc)
 
-#### 4. 
+#### 4. Demanda #######################
+
+demanda=cargar_demanda()
+demanda,eventos=arreglar_demanda(damanda)
 
 
 ##################################
