@@ -514,7 +514,6 @@ def cargar_todo(n):
 
     return [data_exp, interes, contactos, demanda, eventos, llamada]
 
-cargar_todo(0.35)
 
 ##################################
 ### Funciones de creación de BD ##
