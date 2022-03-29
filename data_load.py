@@ -413,7 +413,7 @@ def arreglar_demanda(demanda):
     #tiempo
     time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
     print(f"Tiempo transcurrido: {time_lapse}")
-    return demanda,eventos
+    return demanda_personas,eventos
 
 
 #### 5. Llamadas ##############
@@ -656,29 +656,40 @@ def cargar_todo(n):
 ### Funciones de creación de BD ##
 ##################################
 
-#### Creación de las llaves
+#### Creación de las llaves tipo_doc cedula_new
 
 ## Llave de la bd personas 
-# cedulas=[]
+cedulas=[]
 
-# cedulas.extend(list(data_exp['CEDULA_NEW'].unique()))
-# cedulas.extend(list(interes['CEDULA_NEW'].unique()))
+# Ingresar las cédulas al vector único
+cedulas.extend(list(data_exp['CEDULA_NEW'].unique()))
+cedulas.extend(list(interes['CEDULA_NEW'].unique()))
 
 # cedulas=unique(cedulas)
 
-# ### Creación de los diccionarios
+### Creación de los diccionarios por persona
 
-# dict_personas={}
-# # Rellenar el diccionario de cédulas
-# for ced in cedulas[0:100]:
-#     dict_personas[ced]={'INTERES':interes[interes['CEDULA_NEW']==ced].to_dict('records'),
-#                         'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ced].to_dict('records')}
+def dict_personas_pm(tipo_id,ident):
+    dict_personas={}
+    # Se debe convertir a string la unión entre tipo_doc - doc
+    dict_personas[str(tipo_id)+'-'+str(ident)]={
+        # Carga data experience
+        'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ident].to_dict('records'),
+        # Carga interés
+        'INTERES':interes[interes['CEDULA_NEW']==ident].to_dict('records'),
+        # Carga contactos
+        'CONTACTOS':contactos[(contactos['TIPO DE DOCUMENTO']==tipo_id) & (contactos['CEDULA_NEW']==ident)].to_dict('records'),
+        # Carga Demanda
+        'DEMANDA':demanda[demanda['CEDULA_NEW']==ident].to_dict('records'),
+        # Carga llamadas
+        'LLAMADAS':llamada[(llamada['TIPO DE DOCUMENTO']==tipo_id) & (llamada['CEDULA_NEW']==ident)].to_dict('records')
+        #Falta carga cuentas
+        }
+    return dict_personas
     
-    
-    
-    
-#### 1. Conectar la base de datos
-def conectar_mongo_ccma(coleccion):
+
+####  Conectar la base de datos
+def conectar_colection_mongo_ccma(coleccion):
     client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:ALGGKhn28wNgnGv@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
     #Cargar la base de ccma
     db = client['ccma']
@@ -686,20 +697,9 @@ def conectar_mongo_ccma(coleccion):
     collection = db[coleccion]
     return collection
     
+#### Enviar a la base de mongo
 
-# import sys
-# tamano=sys.getsizeof(dict_personas)    
+#Conectar la colección elegida
+clientes_col=conectar_colection_mongo_ccma('clientes')
+# clientes_col.insert_one(dict_personas_pm(1,10011649800))
 
-
-# import math
-
-# def convert_size(size_bytes):
-#    if size_bytes == 0:
-#        return "0B"
-#    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-#    i = int(math.floor(math.log(size_bytes, 1024)))
-#    p = math.pow(1024, i)
-#    s = round(size_bytes / p, 2)
-#    return "%s %s" % (s, size_name[i])
-    
-# convert_size(tamano)
