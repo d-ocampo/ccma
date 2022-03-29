@@ -14,11 +14,15 @@ import os
 from os import listdir                   # Para listar directorios
 from os.path import isfile, join, isdir  # Para manipular archivos
 
-
 from datetime import datetime # para manejo de datetime
-import xlrd #
+import xlrd #para manipular formatos de excel
 
 import json # Para manipulación de diccionarios
+
+#Para cargar el conector con mongo
+import pymongo
+from pymongo import MongoClient
+
 ########################################################################
 
 #################################
@@ -640,18 +644,13 @@ def cargar_todo(n):
     llamada=nulls_filter(n, llamada)
     
     #### 6. Cuentas ######################
-    # cuentas=cargar_cuentas()
-    # cuentas=arreglar_cuentas(cuentas)
-    # cuentas=nulls_filter(n, cuentas)
-
-    # return [data_exp, interes, contactos, demanda, eventos, llamada,cuentas]
-    return [data_exp, interes, contactos, demanda, eventos, llamada]
-
-def traer_cuentas(n):
     cuentas=cargar_cuentas()
     cuentas=arreglar_cuentas(cuentas)
     cuentas=nulls_filter(n, cuentas)
-    return cuentas
+
+    return [data_exp, interes, contactos, demanda, eventos, llamada,cuentas]
+
+
 
 ##################################
 ### Funciones de creación de BD ##
@@ -676,6 +675,18 @@ def traer_cuentas(n):
 #                         'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ced].to_dict('records')}
     
     
+    
+    
+#### 1. Conectar la base de datos
+def conectar_mongo_ccma(coleccion):
+    client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:ALGGKhn28wNgnGv@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
+    #Cargar la base de ccma
+    db = client['ccma']
+    #cargar la colección elegida
+    collection = db[coleccion]
+    return collection
+    
+
 # import sys
 # tamano=sys.getsizeof(dict_personas)    
 

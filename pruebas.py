@@ -26,16 +26,15 @@ cuentas=traer_cuentas(70)
 
 
 
-def get_connection(self):
-    try:
-        client = MongoClient(MongoDbConnection.CONNECTION_STR)
-        db = client.API
-        return db
-    except Exception as e:
-        print(e)
 
 
 #### 1. COnectar la base de datos
 
 client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:ALGGKhn28wNgnGv@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
-db = client.test
+#Cargar la base de ccma
+db = client['ccma']
+#cargar la colección elegida
+collection_clientes = db["clientes"]
+
+
+
