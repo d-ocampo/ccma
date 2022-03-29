@@ -15,7 +15,9 @@ from os import listdir                   # Para listar directorios
 from os.path import isfile, join, isdir  # Para manipular archivos
 
 
-import datetime as datetime
+import datetime as datetime # para manejo de datetime
+import xlrd #
+
 import json # Para manipulación de diccionarios
 ########################################################################
 
@@ -638,12 +640,18 @@ def cargar_todo(n):
     llamada=nulls_filter(n, llamada)
     
     #### 6. Cuentas ######################
+    # cuentas=cargar_cuentas()
+    # cuentas=arreglar_cuentas(cuentas)
+    # cuentas=nulls_filter(n, cuentas)
+
+    # return [data_exp, interes, contactos, demanda, eventos, llamada,cuentas]
+    return [data_exp, interes, contactos, demanda, eventos, llamada]
+
+def traer_cuentas(n):
     cuentas=cargar_cuentas()
     cuentas=arreglar_cuentas(cuentas)
     cuentas=nulls_filter(n, cuentas)
-
-    return [data_exp, interes, contactos, demanda, eventos, llamada,cuentas]
-
+    return cuentas
 
 ##################################
 ### Funciones de creación de BD ##
