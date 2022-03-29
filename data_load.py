@@ -14,6 +14,8 @@ import os
 from os import listdir                   # Para listar directorios
 from os.path import isfile, join, isdir  # Para manipular archivos
 
+
+import datetime as datetime
 import json # Para manipulación de diccionarios
 ########################################################################
 
@@ -408,6 +410,8 @@ def arreglar_demanda(demanda):
     return demanda,eventos
 
 
+#### 5. Llamadas ##############
+
 def carga_llamadas():
     start_time = time.time()
     print('Inicia carga de llamada')
@@ -420,6 +424,9 @@ def carga_llamadas():
 
 
 def arreglo_llamadas(llamada):
+    start_time = time.time()
+    print('Inicia arreglar llamadas')
+    
     #cambiar columnas
     llamada.columns=[col.upper().strip() for col in llamada.columns]
     
@@ -476,7 +483,125 @@ def arreglo_llamadas(llamada):
            'CONTACTO PERGAMINO', 'RAZÓN SOCIAL', 'CANAL POR EL QUE RENOVARÁ',
            'NOMBRE PERGAMINO', 'ENTRANTE', 'TEXTO', 'TIPO DE ELEMENTO',
            'RUTA DE ACCESO']
+    
+    #tiempo transcurrido
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    
     return llamada
+
+
+#### 6. Cuentas ######################
+
+#Función para cargar cuentas
+def cargar_cuentas():
+
+    start_time = time.time()
+    print('Inicia carga de cuentas')
+
+    # Cargar los datos
+    cuentas = pd.read_excel(data_path+'Cuentas.xlsx')
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    
+    return cuentas
+    
+def arreglar_cuentas(cuentas):
+    start_time = time.time()
+    print('Inicia arreglo de cuentas')
+  
+    # Tabla de homologación de los tipos de documento de la base de Cuentas
+    dict_tipo_doc_new = {
+        'C': 1,
+        'Cedula de ciudadanía': 1,
+        'NIT': 5,
+        'Pasaporte': 3,
+        'Empresa Extranjera': 6,
+        'Cedula de extranjería': 2,
+        'Tarjeta de identidad': 4,
+    }
+
+    # Creación del dataframe desde el diccionario
+    dict_tipo_doc_new = pd.DataFrame.from_dict([dict_tipo_doc_new]).T.reset_index()
+    dict_tipo_doc_new.columns = ['Tipo de documento', 'Tipo_documento_value']
+
+    # Para realizar la corrección en el dataframe original
+    cuentas = cuentas.merge(
+        dict_tipo_doc_new, on="Tipo de documento", how="left")
+    cuentas['Tipo_documento_value'] = cuentas['Tipo_documento_value'].fillna(
+        1)
+    cuentas['Tipo_documento_value'] = cuentas['Tipo_documento_value'].astype(
+        'int')
+
+    # Para corregir las cédulas
+    cuentas['CEDULA_NEW'] = cuentas['Número de documento'].apply(
+        lambda x: "".join(re.findall('\d+', str(x))))
+    cuentas['CEDULA_NEW'] = cuentas['CEDULA_NEW'].apply(
+        lambda x: 0 if x == "" else int(x))
+    cuentas = cuentas[cuentas['CEDULA_NEW'] != 0]
+
+    # Para corregir la razón social y el nombre comercial
+    cuentas['Razón Social'] = cuentas['Razón Social'].apply(
+        lambda x: x.upper() if isinstance(x, str) else "NO ESPECIFICADO")
+    cuentas['Nombre comercial'] = np.where(pd.isnull(
+        cuentas['Nombre comercial']), cuentas['Razón Social'], cuentas['Nombre comercial'].str.upper())
+
+    # Para corregir variables con valores Sin definir
+    not_defined_vars = ['Naturaleza',
+                        'TPCM',
+                        'Tamaño',
+                        'Es proponente',
+                        'Representante legal',
+                        'Empresa activa en Cámara',
+                        'Ciudad dirección comercial',
+                        'Departamento dirección comercial',
+                        'Cámara de comercio/Regional',
+                        'Ciudad  dirección notificación judicial',
+                        'Departamento dirección notificación judicial',
+                        'Dirección notificación judicial'
+    ]
+
+    for col in not_defined_vars:
+        cuentas[col] = np.where(
+            pd.isnull(cuentas[col]), "Sin definir", cuentas[col])
+
+
+    # Para crear variables binarias con las que lo permiten
+    dummy_vars = ["Es afiliado",
+                "¿Empresa miembro de junta directiva?",
+                "Clúster VIP",
+                "Es empresa de familia",
+                "Exporta",
+                "Importa?",
+                "Pertenece a RNT",
+                "Es proveedor CCMA"]
+
+    for col in dummy_vars:
+        cuentas[col] = cuentas[col].apply(
+            lambda x: 0 if x == "No" else 1)
+
+    # Para convertir los números decimales en fechas (date)
+    date_cols = ['Fecha de matrícula', 'Fecha de última renovación']
+
+    for col in date_cols:
+        cuentas[col + "_new"] = cuentas[col].fillna("")
+        cuentas[col + "_new"] = cuentas[col + "_new"].apply(lambda x: datetime(*xlrd.xldate_as_tuple(x, 0)).date() if x != "" else "")
+
+    # Para eliminar columnas sobrantes
+    cols_to_drop = [
+        "No. sucursales en Colombia",
+        "No. Sucursales en el exterior",
+        'Número de documento'
+    ]
+    cuentas.drop(cols_to_drop + date_cols, axis=1, inplace=True)
+
+    # tiempo transcurrido
+    time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+    print(f"Tiempo transcurrido: {time_lapse}")
+    
+    return cuentas
+
+
 
 
 ##################################
@@ -511,8 +636,13 @@ def cargar_todo(n):
     llamada=carga_llamadas()
     llamada=arreglo_llamadas(llamada)
     llamada=nulls_filter(n, llamada)
+    
+    #### 6. Cuentas ######################
+    cuentas=cargar_cuentas()
+    cuentas=arreglar_cuentas(cuentas)
+    cuentas=nulls_filter(n, cuentas)
 
-    return [data_exp, interes, contactos, demanda, eventos, llamada]
+    return [data_exp, interes, contactos, demanda, eventos, llamada,cuentas]
 
 
 ##################################
