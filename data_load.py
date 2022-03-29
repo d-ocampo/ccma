@@ -658,14 +658,27 @@ def cargar_todo(n):
 
 #### Creación de las llaves tipo_doc cedula_new
 
-## Llave de la bd personas 
-cedulas=[]
+def crear_cedulas_base():
+    ## Llave de la bd personas 
+    cedulas=[]
+    
+    # Ingresar las cédulas al vector único
+    # data experience
+    cedulas.extend([(1,i) for i in list(data_exp['CEDULA_NEW'].unique())])
+    # interés
+    cedulas.extend([(1,i) for i in list(interes['CEDULA_NEW'].unique())])
+    # contactos
+    cedulas.extend(list(zip(contactos['TIPO DE DOCUMENTO'],contactos['CEDULA_NEW'])))
+    #demanda
+    cedulas.extend([(1,i) for i in list(demanda['CEDULA_NEW'].unique())])
+    #llamdas
+    cedulas.extend(list(zip(llamada['TIPO DE DOCUMENTO'],llamada['CEDULA_NEW'])))
+    #falta cuentas
+    
+    #Obtener las únicas
+    cedulas=unique(cedulas)
+    return cedulas
 
-# Ingresar las cédulas al vector único
-cedulas.extend(list(data_exp['CEDULA_NEW'].unique()))
-cedulas.extend(list(interes['CEDULA_NEW'].unique()))
-
-# cedulas=unique(cedulas)
 
 ### Creación de los diccionarios por persona
 
@@ -689,6 +702,7 @@ def dict_personas_pm(tipo_id,ident):
     
 
 ####  Conectar la base de datos
+
 def conectar_colection_mongo_ccma(coleccion):
     client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:ALGGKhn28wNgnGv@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
     #Cargar la base de ccma
@@ -696,10 +710,19 @@ def conectar_colection_mongo_ccma(coleccion):
     #cargar la colección elegida
     collection = db[coleccion]
     return collection
+    }
+    
     
 #### Enviar a la base de mongo
 
 #Conectar la colección elegida
 clientes_col=conectar_colection_mongo_ccma('clientes')
-# clientes_col.insert_one(dict_personas_pm(1,10011649800))
+
+#traer las cédulas unicas
+cedulas_unicas=crear_cedulas_base()
+
+#iteración para cargar a mongo
+for i,j in cedulas_unicas:
+    #insertar 1 a 1 cada registro
+    clientes_col.insert_one(dict_personas_pm(i,j))
 
