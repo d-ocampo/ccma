@@ -15,7 +15,7 @@ from os import listdir                   # Para listar directorios
 from os.path import isfile, join, isdir  # Para manipular archivos
 
 
-import datetime as datetime # para manejo de datetime
+from datetime import datetime # para manejo de datetime
 import xlrd #
 
 import json # Para manipulación de diccionarios
