@@ -726,3 +726,9 @@ for i,j in cedulas_unicas:
     #insertar 1 a 1 cada registro
     clientes_col.insert_one(dict_personas_pm(i,j))
 
+
+clientes_col.find({})
+
+db.student.find({}, {roll:1, _id:0})
+
+
