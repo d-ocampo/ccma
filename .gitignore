@@ -1,1 +1,37 @@
+#orginal data
 /data/
+
+#app ignore
+# byte-compiled / optimized / DLL files
+/app-ccma/__pycache__/
+/app-ccma/*.py[cod]
+
+# tests and coverage
+/app-ccma/*.pytest_cache
+/app-ccma/.coverage
+
+# database & logs
+/app-ccma/*.db
+/app-ccma/*.sqlite3
+/app-ccma/*.log
+
+# venv
+/app-ccma/env
+/app-ccma/venv
+
+# other
+/app-ccma/.DS_Store
+
+# sphinx docs 
+/app-ccma/_build
+/app-ccma/_static
+/app-ccma/_templates
+
+# javascript
+/app-ccma/package-lock.json
+/app-ccma/.vscode/symbols.json
+
+/app-ccma/apps/static/assets/node_modules
+/app-ccma/apps/static/assets/yarn.lock
+/app-ccma/apps/static/assets/.temp
+
