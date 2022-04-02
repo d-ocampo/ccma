@@ -417,7 +417,8 @@ def arreglar_demanda(demanda):
          'CARGO':'first',
          # se propone, pero se puede cambiar
          'TIPOACTIVIDAD':','.join,
-         'FORMATONOMBRE':','.join
+         'FORMATONOMBRE':','.join,
+         'ID':','.join
          }
         ).reset_index()
     
@@ -712,9 +713,11 @@ def crear_cedulas_base():
 ### Creación de los diccionarios por persona
 
 def dict_personas_pm(tipo_id,ident):
-    dict_personas={}
+    dict_personas={
     # Se debe convertir a string la unión entre tipo_doc - doc
-    dict_personas[str(tipo_id)+'-'+str(ident)]={
+    'identificación':str(tipo_id)+'-'+str(ident),
+    #características de ñps clientes
+        'características':{
         # Carga data experience
         'EXPERIENCIA':data_exp[data_exp['CEDULA_NEW']==ident].to_dict('records'),
         # Carga interés
@@ -727,6 +730,8 @@ def dict_personas_pm(tipo_id,ident):
         'LLAMADAS':llamada[(llamada['TIPO DE DOCUMENTO']==tipo_id) & (llamada['CEDULA_NEW']==ident)].to_dict('records')
         #Falta carga cuentas
         }
+    }
+    
     return dict_personas
     
 
@@ -747,11 +752,12 @@ def conectar_colection_mongo_ccma(coleccion):
 #Conectar la colección elegida
 clientes_col=conectar_colection_mongo_ccma('clientes')
 
+
 #traer las cédulas unicas
 cedulas_unicas=crear_cedulas_base()
 
 #iteración para cargar a mongo
-for i,j in cedulas_unicas:
+for i,j in cedulas_unicas[0:100]:
     #insertar 1 a 1 cada registro
     clientes_col.insert_one(dict_personas_pm(i,j))
 
@@ -830,21 +836,56 @@ for sublist in demanda['TIPOACTIVIDAD'].str.split(',').to_list():
 #contar los eventos en plano
 x=Counter(flat_list)
 
-
-
+#porcetnaje de asistencia
 [i/539180 for i in [33932, 361867, 456, 97108,45817]]
 
+######### COnteo de temas
+
+#aplanar la lista de eventos
+flat_list = []
+for sublist in interes['TEMAS_INTERES'].dropna().str.split(',').to_list():
+    for item in sublist:
+        try:
+            if int(item) in dict_temas.keys():
+                flat_list.append(item)
+        except:
+            pass
+
+#contar los eventos en plano
+x=Counter(flat_list)
+
+[i[0] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]]
+    
+suma=sum([i[1] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]])
+[round(i/suma*100) for i in [i[1] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]]]
+    
+    print('{')
+    print(' x:"',i[0],'",')
+    print(' y:',round(i[1]/1000),',')
+    print('},')
 
 
-interes['TEMAS_INTERES'].dropna()
+import random
+no_of_colors=len(list(x.items()))
+color=["#"+''.join([random.choice('0123456789ABCDEF') for i in range(6)])
+       for j in range(no_of_colors)]
+
+
+dsample=data_exp.sample(10000)
+
+data_exp.columns
+
+group_data=data_exp.groupby(['ORIGEN_CAT', 'CARGO_HOMOLOGO']).agg({'CEDULA_NEW':'count'}).reset_index()
+
+group_data['ORIGEN_CAT']=group_data['ORIGEN_CAT'].apply(lambda x: dict_agrupacion[x])
 
 
 
+group_data=group_data.sort_values(by=['CARGO_HOMOLOGO'])
 
 
+group_data['CARGO_HOMOLOGO'].unique()
 
-
-
-
+group_data['CEDULA_NEW'].to_list()
 
 
