@@ -398,7 +398,7 @@ def arreglar_demanda(demanda):
     
     #eliminar datos de los eventos
     demanda_personas=demanda[['FECHAINSCRIPCIÓN', 'REGIÓN', 'IDENTASISTENTE', 'NOMBREASISTENTE',
-           'NITRE', 'RAZÓNSOCIAL', 'CARGO', 'TIPOACTIVIDAD', 'FORMATONOMBRE']]
+           'NITRE', 'RAZÓNSOCIAL', 'CARGO', 'TIPOACTIVIDAD', 'FORMATONOMBRE','ID']]
     
     #Cambiar todo a string
     demanda_personas=demanda_personas.fillna('')
