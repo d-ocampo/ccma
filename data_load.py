@@ -710,7 +710,7 @@ def conectar_colection_mongo_ccma(coleccion):
     #cargar la colección elegida
     collection = db[coleccion]
     return collection
-    }
+
     
     
 #### Enviar a la base de mongo
