@@ -298,7 +298,7 @@ $(document).ready(function() {
                         }
                     }],
                     xaxis: [{
-                        x: new Date('14 Nov 2012').getTime(),
+                        x: new Date('27 Nov 2012').getTime(),
                         borderColor: '#999',
                         yAxisIndex: 0,
                         label: {
@@ -1002,25 +1002,27 @@ $(document).ready(function() {
                 }],
                 plotOptions: {
                     bar: {
-                        horizontal: false,
+                        horizontal: true,
                     },
                 },
                 series: [{
-                    name: 'PRODUCT A',
+                    name: 'Administrativa',
                     data: [44, 55, 41, 67, 22, 43]
                 }, {
-                    name: 'PRODUCT B',
+                    name: 'Auditoria, contraloría',
                     data: [13, 23, 20, 8, 13, 27]
                 }, {
-                    name: 'PRODUCT C',
+                    name: 'Gerencia',
                     data: [11, 17, 15, 15, 21, 14]
                 }, {
-                    name: 'PRODUCT D',
+                    name: 'Proyectos',
                     data: [21, 7, 25, 13, 22, 8]
                 }],
                 xaxis: {
-                    type: 'datetime',
-                    categories: ['01/01/2011 GMT', '01/02/2011 GMT', '01/03/2011 GMT', '01/04/2011 GMT', '01/05/2011 GMT', '01/06/2011 GMT'],
+                    type: 'string',
+                    categories: ['Capacitación', 'Fortalecimiento empresarial',
+                    'Métodos alternativos para la solución de conflictos', 'Otros',
+                    'Servicios especializados', 'Servicios registrales'],
                 },
                 legend: {
                     position: 'right',
@@ -2353,7 +2355,7 @@ $(document).ready(function() {
                         endAngle: 270,
                         hollow: {
                             margin: 5,
-                            size: '30%',
+                            size: '20%',
                             background: 'transparent',
                             image: undefined,
                         },
@@ -2368,7 +2370,7 @@ $(document).ready(function() {
                         }
                     }
                 },
-                colors: ["#4099ff", "#0e9e4a", "#FFB64D", "#FF5370"],
+                colors: ["#4099ff", "#0e9e4a", "#FFB64D", "#FF5370","#4099ff"],
                 fill: {
                     type: 'gradient',
                     gradient: {
@@ -2378,15 +2380,15 @@ $(document).ready(function() {
                         inverseColors: true,
                         opacityFrom: 1,
                         opacityTo: 0.7,
-                        stops: [40, 100]
+                        stops: [500, 370000]
                     }
                 },
-                series: [76, 67, 61, 90],
-                labels: ['Vimeo', 'Messenger', 'Facebook', 'LinkedIn'],
+                series: [33932, 361867, 456, 97108, 45817],
+                labels: ['Reunión', 'Evento', 'Propuesta', 'PQRS','Servicio'],
                 legend: {
                     show: true,
                     floating: true,
-                    fontSize: '16px',
+                    fontSize: '12px',
                     position: 'left',
                     offsetX: 0,
                     offsetY: 0,

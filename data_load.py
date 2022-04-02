@@ -23,6 +23,10 @@ import json # Para manipulación de diccionarios
 import pymongo
 from pymongo import MongoClient
 
+
+import datetime, time
+
+
 ########################################################################
 
 #################################
@@ -74,6 +78,31 @@ dict_tipo_doc={1:'Cedula de ciudadanía',
     7:'Número único de identificación personal NUIP',
     8:'Registro Civil'
                 }
+
+# Diccionario maestra de temas
+dict_temas={20080:"Gobierno corporativo",
+    200100:"Internacionalización",
+    200110:"Jurídica",
+    20040:"Desarrollo del ser",
+    20030:"Contabilidad y finanzas",
+    200130:"Mercadeo y Servicio al Cliente",
+    20010:"Arte",
+    20070:"Gestión humana",
+    20060:"Gerencia y Administración",
+    20050:"Economía",
+    20090:"Innovación y Transformación Digital",
+    200150:"Productividad",
+    200180:"Ventas",
+    20020:"Cine",
+    200120:"Literatura",
+    200140:"Música",
+    200160:"Registros",
+    200170:"Solución de Conflictos",
+    20040:"Calidad y procesos",
+    20050:"Comunicación",
+    20070:"Contabilidad"
+    }
+
 
 
 #Cruce entre interés demanda e intereses
@@ -730,5 +759,92 @@ for i,j in cedulas_unicas:
 clientes_col.find({})
 
 db.student.find({}, {roll:1, _id:0})
+
+
+################################
+#### COnsultas útiles ##########
+################################
+
+#cantidad clientes
+len(cedulas_unicas)
+
+#Encuestas de experiencia
+len(data_exp['CEDULA_NEW'].unique())
+len(data_exp['CEDULA_NEW'].unique())/len(cedulas_unicas)
+
+#Interes
+len(interes['CEDULA_NEW'].unique())
+len(interes['CEDULA_NEW'].unique())/len(cedulas_unicas)
+
+#Contactos
+len(contactos['CEDULA_NEW'].unique())
+len(contactos['CEDULA_NEW'].unique())/len(cedulas_unicas)
+
+#Demanda
+len(demanda['CEDULA_NEW'].unique())
+len(demanda['CEDULA_NEW'].unique())/len(cedulas_unicas)
+
+#Llamadas
+len(llamada['CEDULA_NEW'].unique())
+len(llamada['CEDULA_NEW'].unique())/len(cedulas_unicas)
+
+#Eventos
+len(eventos['ID'].unique())
+
+#cuentas
+len(cuentas['CEDULA_NEW'].unique())
+len(cuentas['CEDULA_NEW'].unique())/len(cedulas_unicas)
+
+########## serie de tiempo de eventos
+
+#aplanar la lista de eventos
+flat_list = []
+for sublist in demanda['FECHAINSCRIPCIÓN'].str.split(',').to_list():
+    for item in sublist:
+        flat_list.append(item)
+
+#contar los eventos en plano
+x=Counter(flat_list)
+
+# Diccionario del conteo
+ordered_dict=OrderedDict(sorted(x.items()))
+#convertir fecha en js
+def fecha_js(fecha):
+    d = datetime.date(int(fecha.split('-')[0]), int(fecha.split('-')[1]), int(fecha.split('-')[2]))
+    for_js = int(time.mktime(d.timetuple())) * 1000
+    return for_js
+
+#print de la fecha
+for i in [[fecha_js(i[0]),i[1]] for i in list(ordered_dict.items())]:
+    print(i,',')
+
+
+########## onteo de tipo de eventos
+
+#aplanar la lista de eventos
+flat_list = []
+for sublist in demanda['TIPOACTIVIDAD'].str.split(',').to_list():
+    for item in sublist:
+        flat_list.append(item)
+
+#contar los eventos en plano
+x=Counter(flat_list)
+
+
+
+[i/539180 for i in [33932, 361867, 456, 97108,45817]]
+
+
+
+interes['TEMAS_INTERES'].dropna()
+
+
+
+
+
+
+
+
+
 
 
