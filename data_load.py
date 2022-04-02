@@ -406,6 +406,7 @@ def arreglar_demanda(demanda):
     #Cambiar fecha por string
     demanda_personas['FECHAINSCRIPCIÓN']=demanda_personas['FECHAINSCRIPCIÓN'].astype(str)
     demanda_personas['FORMATONOMBRE']=demanda_personas['FORMATONOMBRE'].astype(str)
+    demanda_personas['ID']=demanda_personas['ID'].astype(str)
     
     #agrupar preferencias de la persona
     demanda_personas=demanda_personas.groupby('IDENTASISTENTE').agg(
