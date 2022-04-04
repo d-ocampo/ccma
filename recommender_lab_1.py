@@ -30,6 +30,19 @@ np.random.seed(seed)
 demanda = cargar_demanda()
 demanda, eventos = arreglar_demanda(demanda)
 
+def to_1D(series):
+    return pd.Series([x for _list in series for x in _list])
+
+demanda=demanda.sample(10000)
+demanda['len']=demanda['ID'].apply(lambda x: len(x.split(',')))
+demanda['ID']=demanda['ID'].apply(lambda x: x.split(','))
+
+new_demanda=pd.DataFrame()
+new_demanda['ID']= to_1D(demanda['ID'])
+new_demanda['CEDULA_NEW']=demanda[['CEDULA_NEW','len']].loc[demanda.index.repeat(demanda.len)].reset_index()['CEDULA_NEW']
+
+demanda=new_demanda.rename(columns={'CEDULA_NEW':'IDENTASISTENTE'})
+
 
 start_time = time.time()
 
