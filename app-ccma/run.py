@@ -7,7 +7,12 @@ from flask_migrate import Migrate
 from sys import exit
 from decouple import config
 
-from flask import render_template, redirect, request, url_for
+from flask import render_template, redirect, request, url_for, Flask, flash, redirect
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = '/path/to/the/uploads'
+ALLOWED_EXTENSIONS = {'csv'}
+
 
 import pandas as pd
 
@@ -90,7 +95,85 @@ def index():
                            row_data_desc=list(describe.values.tolist()),
                            zip=zip)
 
+## FUnción para cargar tablas
+# Descomentar con los comentarios de la ccma
+# @app.route('/metadata', methods = ['GET', 'POST'])
+# def upload_file():
+#     if request.method == 'POST':
+#         f = request.files['file']
+#         f.save(secure_filename(f.filename))
+#         return render_template('/home/metadata.html')
+#     else:
+#         return render_template('/home/metadata.html')
 
+# Función para ejecutar el sistema de recomendación
+@app.route("/search", methods=['GET', 'POST'])
+def search():
+    errors = []
+    results = {}
+    id={}
+    nombre_cliente=''
+    edad=''
+    correo_cliente=''
+    tel_cliente=''
+    dir_cliente=''
+    cargo_cliente=''
+    empresa_cliente=''
+    
+    p_experiencia=''
+    p_llamada=''
+    p_cuentas=''
+    p_demanda=''
+    p_interes=''
+    p_relacion=''
+    
+    intereses=[]
+    if request.method == "POST":
+        # get url that the user has entered
+        try:
+            id = request.form['buscar']
+            nombre_cliente='Pedro Perez'
+            edad=35
+            correo_cliente='pperez@gmail.com'
+            tel_cliente='3172994422'
+            dir_cliente='Dg. 32 #33a Sur-96, Envigado, Antioquia'
+            cargo_cliente='Representante legal'
+            empresa_cliente='Empaques plásticos enviagado SA'
+            
+            p_experiencia=25
+            p_llamada=15
+            p_cuentas=45
+            p_demanda=13
+            p_interes=5
+            p_relacion=1
+            
+            intereses=["Gobierno corporativo",
+                        "Internacionalización",
+                        "Jurídica",
+                        "Desarrollo del ser",
+                        "Contabilidad y finanzas"]
+        except:
+            errors.append(
+                "Unable to get URL. Please make sure it's valid and try again."
+            )
+    return render_template('/home/search.html', 
+                           errors=errors, 
+                           results=results, 
+                           id=id,
+                           nombre_cliente=nombre_cliente,
+                           edad=edad,
+                           correo_cliente=correo_cliente,
+                           tel_cliente=tel_cliente,
+                           dir_cliente=dir_cliente,
+                           cargo_cliente=cargo_cliente,
+                           empresa_cliente=empresa_cliente,
+                            p_experiencia=p_experiencia,
+                            p_llamada=p_llamada,
+                            p_cuentas=p_cuentas,
+                            p_demanda=p_demanda,
+                            p_interes=p_interes,
+                            p_relacion=p_relacion,
+                            intereses=intereses)
 
 
 if __name__ == "__main__":

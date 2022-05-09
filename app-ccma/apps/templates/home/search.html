@@ -1,0 +1,150 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Consultas {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+
+	<!-- [ Main Content ] start -->
+	<div class="pcoded-main-container">
+		<div class="pcoded-content">
+			<!-- [ breadcrumb ] start -->
+			<div class="page-header">
+				<div class="page-block">
+					<div class="row align-items-center">
+						<div class="col-md-12">
+							<div class="page-header-title">
+								<h5 class="m-b-10">Consultas</h5>
+							</div>
+							<ul class="breadcrumb">
+								<li class="breadcrumb-item"><a href="index.html"><i class="feather icon-home"></i></a></li>
+								<li class="breadcrumb-item"><a href="#!">Consultas</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<!-- [ sample-page ] start -->
+				<div class="col-sm-12">
+					<div class="card">
+
+						<div class="card-header">
+							<h5>
+								Buscador de clientes
+							</h5>
+						</div>
+						<form method="post">				
+							<p><input type="text" name="buscar" class="form-control" id="search-box" placeholder="Identificación del cliente" >
+						  </p>
+						  <br>
+						  <button type="submit" class="btn btn-primary">Buscar...</button>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-6 col-xl-4">
+					<h5>Información del cliente</h5>
+					<hr>
+					<div class="card mb-3">
+						<img class="img-fluid card-img-top" src="/static/assets/images/slider/pic_person.jpg" >
+						<div class="card-body">
+							<h5 class="card-title">Identificación {{id}}</h5>
+							<p class="card-text" style="font-weight: bold;">Nombre:</p>
+							<p class="card-text">{{nombre_cliente}}</p>
+							<p class="card-text" style="font-weight: bold;">Edad:</p>
+							<p class="card-text">{{edad}}</p>
+							<p class="card-text"><small class="text-muted">Datos del cliente</small></p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6 col-xl-4">
+					<h5></h5>
+					<hr>
+					<div class="card">
+						<div class="card-body">
+							<h5 class="card-title">Información de contacto</h5>
+							<p class="card-text" style="font-weight: bold;">Correo:</p>
+							<p class="card-text">{{correo_cliente}}</p>
+							<p class="card-text" style="font-weight: bold;">Teléfono:</p>
+							<p class="card-text">{{tel_cliente}}</p>
+							<p class="card-text" style="font-weight: bold;">Dirección:</p>
+							<p class="card-text">{{dir_cliente}}</p>
+							<p class="card-text" style="font-weight: bold;">Cargo:</p>
+							<p class="card-text">{{cargo_cliente}}</p>
+							<p class="card-text" style="font-weight: bold;">Empresa:</p>
+							<p class="card-text">{{empresa_cliente}}</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6 col-xl-4">
+					<h5></h5>
+					<hr>
+					<div class="card">
+						<br>
+						<h5 class="card-title">Completitud de información</h5>
+						<p class="card-text" style="font-weight: bold;">Experiencia:</p>
+						<div class="progress mb-4">
+							<div class="progress-bar" role="progressbar" style="width: {{p_experiencia}}%;" aria-valuenow="{{p_experiencia}}" aria-valuemin="0" aria-valuemax="100">{{p_experiencia}}%</div>
+						</div>
+						<p class="card-text" style="font-weight: bold;">Llamadas:</p>
+						<div class="progress mb-4">
+							<div class="progress-bar" role="progressbar" style="width: {{p_llamada}}%;" aria-valuenow="{{p_llamada}}" aria-valuemin="0" aria-valuemax="100">{{p_llamada}}%</div>
+						</div>
+
+						<p class="card-text" style="font-weight: bold;">Cuentas:</p>
+						<div class="progress mb-4">
+							<div class="progress-bar" role="progressbar" style="width: {{p_cuentas}}%;" aria-valuenow="{{p_cuentas}}" aria-valuemin="0" aria-valuemax="100">{{p_cuentas}}%</div>
+						</div>
+
+						<p class="card-text" style="font-weight: bold;">Demanda:</p>
+						<div class="progress mb-4">
+							<div class="progress-bar" role="progressbar" style="width: {{p_demanda}}%;" aria-valuenow="{{p_demanda}}" aria-valuemin="0" aria-valuemax="100">{{p_demanda}}%</div>
+						</div>
+
+						<p class="card-text" style="font-weight: bold;">Interes:</p>
+						<div class="progress mb-4">
+							<div class="progress-bar" role="progressbar" style="width: {{p_interes}}%;" aria-valuenow="{{p_interes}}" aria-valuemin="0" aria-valuemax="100">{{p_interes}}%</div>
+						</div>
+
+						<p class="card-text" style="font-weight: bold;">Relaciones:</p>
+						<div class="progress mb-4">
+							<div class="progress-bar" role="progressbar" style="width: {{p_relacion}}%;" aria-valuenow="{{p_relacion}}" aria-valuemin="0" aria-valuemax="100">{{p_relacion}}%</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+			<!-- [ breadcrumb ] end -->
+			<!-- [ Main Content ] start -->
+			<div class="row">
+				<!-- [ sample-page ] start -->
+				<div class="col-sm-12">
+					<div class="card">
+
+						<div class="card-header">
+							<h5>Intereses</h5>
+						</div>
+						<div class="card-body">
+							{% for interes in intereses%}
+							<li>{{ interes }}</li>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+				<!-- [ sample-page ] end -->
+			</div>
+			<!-- [ Main Content ] end -->
+		</div>
+	</div>
+	<!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
