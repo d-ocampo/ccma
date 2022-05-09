@@ -1,5 +1,10 @@
 #orginal data
 /data/
+/docs/
+/videos/
+
+#llave de ec2
+ccma.pem
 
 #app ignore
 # byte-compiled / optimized / DLL files

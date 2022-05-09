@@ -622,7 +622,7 @@ def arreglar_cuentas(cuentas):
 
     for col in date_cols:
         cuentas[col + "_new"] = cuentas[col].fillna("")
-        cuentas[col + "_new"] = cuentas[col + "_new"].apply(lambda x: datetime(*xlrd.xldate_as_tuple(x, 0)).date() if x != "" else "")
+        cuentas[col + "_new"] = cuentas[col + "_new"].apply(lambda x: datetime(xlrd.xldate_as_tuple(x, 0)).date() if x != "" else "")
 
     # Para eliminar columnas sobrantes
     cols_to_drop = [
@@ -675,9 +675,9 @@ def cargar_todo(n):
     llamada=nulls_filter(n, llamada)
     
     #### 6. Cuentas ######################
-    cuentas=cargar_cuentas()
-    cuentas=arreglar_cuentas(cuentas)
-    cuentas=nulls_filter(n, cuentas)
+cuentas=cargar_cuentas()
+cuentas=arreglar_cuentas(cuentas)
+cuentas=nulls_filter(n, cuentas)
 
     return [data_exp, interes, contactos, demanda, eventos, llamada,cuentas]
 
