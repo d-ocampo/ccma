@@ -14,11 +14,30 @@ from data_load import cargar_todo
 
 ####################################
 
+#Cargar bases
+data_exp, interes, contactos, demanda, eventos, llamada, cuentas=cargar_todo(70)
 
+#Obtener cédulas
+cedulas=crear_cedulas_base(data_exp,interes,contactos,demanda,llamada)
 
-data_exp, interes, contactos, demanda, eventos, llamada,cuentas=cargar_todo(70)
+#Conectar la colección elegida
+clientes_col=conectar_colection_mongo_ccma('clientes')
 
-
+#cargar la base una a una
+count=0
+for i,j in cedulas_unicas:
+    count=count+1
+    print(round(count/len(cedulas_unicas)*100,3))
+    print(i,j)
+    ced_no=[]
+    try:
+        #insertar 1 a 1 cada registro
+        clientes_col.insert_one(dict_personas_pm(i,j))
+    except:
+        ced_no.append((i,j))
+        continue
+        
+        
 
 
 
