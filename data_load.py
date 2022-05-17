@@ -631,7 +631,8 @@ def arreglar_cuentas(cuentas):
         "No. Sucursales en el exterior",
         'Número de documento'
     ]
-    cuentas.drop(cols_to_drop + date_cols, axis=1, inplace=True)
+    # cuentas.drop(cols_to_drop + date_cols, axis=1, inplace=True)
+    cuentas.drop(cols_to_drop, axis=1, inplace=True)
 
     # tiempo transcurrido
     time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
@@ -690,7 +691,7 @@ def cargar_todo(n):
 
 #### Creación de las llaves tipo_doc cedula_new
 
-def crear_cedulas_base(data_exp,interes,contactos,demanda,llamada):
+def crear_cedulas_base(data_exp,interes,contactos,demanda,llamada,cuentas):
     ## Llave de la bd personas 
     cedulas=[]
     
@@ -705,7 +706,8 @@ def crear_cedulas_base(data_exp,interes,contactos,demanda,llamada):
     cedulas.extend([(1,i) for i in list(demanda['CEDULA_NEW'].unique())])
     #llamdas
     cedulas.extend(list(zip(llamada['TIPO DE DOCUMENTO'],llamada['CEDULA_NEW'])))
-    #falta cuentas
+    #cuentas
+    cedulas.extend(list(zip(cuentas['Tipo_documento_value'],cuentas['CEDULA_NEW'])))
     
     #Obtener las únicas
     cedulas=unique(cedulas)
@@ -729,8 +731,9 @@ def dict_personas_pm(tipo_id,ident):
         # Carga Demanda
         'DEMANDA':demanda[demanda['CEDULA_NEW']==ident].to_dict('records'),
         # Carga llamadas
-        'LLAMADAS':llamada[(llamada['TIPO DE DOCUMENTO']==tipo_id) & (llamada['CEDULA_NEW']==ident)].to_dict('records')
-        #Falta carga cuentas
+        'LLAMADAS':llamada[(llamada['TIPO DE DOCUMENTO']==tipo_id) & (llamada['CEDULA_NEW']==ident)].to_dict('records'),
+        # Carga cuentas
+        'CUENTAS':cuentas[(cuentas['Tipo_documento_value']==tipo_id) & (cuentas['CEDULA_NEW']==ident)].to_dict('records')
         }
     }
     
@@ -739,8 +742,12 @@ def dict_personas_pm(tipo_id,ident):
 
 ####  Conectar la base de datos
 
-def conectar_colection_mongo_ccma(coleccion):
-    client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:WpyATG4YVumTaPEd@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
+#Base en mongo atlas
+def conectar_colection_mongo_ccma(coleccion,base):
+    if base==1:
+        client = pymongo.MongoClient('hostname', 27017)
+    else:
+        client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:WpyATG4YVumTaPEd@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
     #Cargar la base de ccma
     db = client['ccma']
     #cargar la colección elegida
@@ -748,14 +755,11 @@ def conectar_colection_mongo_ccma(coleccion):
     return collection
 
 
-client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:WpyATG4YVumTaPEd@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
-db = client.test
-
     
 # #### Enviar a la base de mongo
 
 #Conectar la colección elegida
-clientes_col=conectar_colection_mongo_ccma('clientes')
+# clientes_col=conectar_colection_mongo_ccma('clientes')
 
 
 # #traer las cédulas unicas
