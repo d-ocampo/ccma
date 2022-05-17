@@ -24,7 +24,8 @@ import pymongo
 from pymongo import MongoClient
 
 
-import datetime, time
+# from datetime import datetime, time
+import time
 
 
 ########################################################################
@@ -618,11 +619,11 @@ def arreglar_cuentas(cuentas):
             lambda x: 0 if x == "No" else 1)
 
     # Para convertir los números decimales en fechas (date)
-    date_cols = ['Fecha de matrícula', 'Fecha de última renovación']
+    # date_cols = ['Fecha de matrícula', 'Fecha de última renovación']
 
-    for col in date_cols:
-        cuentas[col + "_new"] = cuentas[col].fillna("")
-        cuentas[col + "_new"] = cuentas[col + "_new"].apply(lambda x: datetime(xlrd.xldate_as_tuple(x, 0)).date() if x != "" else "")
+    # for col in date_cols:
+    #     cuentas[col + "_new"] = cuentas[col].fillna("")
+    #     cuentas[col + "_new"] = cuentas[col + "_new"].apply(lambda x: datetime(xlrd.xldate_as_tuple(x, 0)).date() if x != "" else "")
 
     # Para eliminar columnas sobrantes
     cols_to_drop = [
@@ -675,9 +676,9 @@ def cargar_todo(n):
     llamada=nulls_filter(n, llamada)
     
     #### 6. Cuentas ######################
-cuentas=cargar_cuentas()
-cuentas=arreglar_cuentas(cuentas)
-cuentas=nulls_filter(n, cuentas)
+    cuentas=cargar_cuentas()
+    cuentas=arreglar_cuentas(cuentas)
+    cuentas=nulls_filter(n, cuentas)
 
     return [data_exp, interes, contactos, demanda, eventos, llamada,cuentas]
 
@@ -689,7 +690,7 @@ cuentas=nulls_filter(n, cuentas)
 
 #### Creación de las llaves tipo_doc cedula_new
 
-def crear_cedulas_base():
+def crear_cedulas_base(data_exp,interes,contactos,demanda,llamada):
     ## Llave de la bd personas 
     cedulas=[]
     
@@ -739,154 +740,157 @@ def dict_personas_pm(tipo_id,ident):
 ####  Conectar la base de datos
 
 def conectar_colection_mongo_ccma(coleccion):
-    client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:ALGGKhn28wNgnGv@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
+    client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:WpyATG4YVumTaPEd@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
     #Cargar la base de ccma
     db = client['ccma']
     #cargar la colección elegida
     collection = db[coleccion]
     return collection
 
+
+client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:WpyATG4YVumTaPEd@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
+db = client.test
+
     
-    
-#### Enviar a la base de mongo
+# #### Enviar a la base de mongo
 
 #Conectar la colección elegida
 clientes_col=conectar_colection_mongo_ccma('clientes')
 
 
-#traer las cédulas unicas
-cedulas_unicas=crear_cedulas_base()
+# #traer las cédulas unicas
+# cedulas_unicas=crear_cedulas_base()
 
-#iteración para cargar a mongo
-for i,j in cedulas_unicas[0:100]:
-    #insertar 1 a 1 cada registro
-    clientes_col.insert_one(dict_personas_pm(i,j))
-
-
-clientes_col.find({})
-
-db.student.find({}, {roll:1, _id:0})
+# #iteración para cargar a mongo
+# for i,j in cedulas_unicas[0:100]:
+#     #insertar 1 a 1 cada registro
+#     clientes_col.insert_one(dict_personas_pm(i,j))
 
 
-################################
-#### COnsultas útiles ##########
-################################
+# clientes_col.find({})
 
-#cantidad clientes
-len(cedulas_unicas)
-
-#Encuestas de experiencia
-len(data_exp['CEDULA_NEW'].unique())
-len(data_exp['CEDULA_NEW'].unique())/len(cedulas_unicas)
-
-#Interes
-len(interes['CEDULA_NEW'].unique())
-len(interes['CEDULA_NEW'].unique())/len(cedulas_unicas)
-
-#Contactos
-len(contactos['CEDULA_NEW'].unique())
-len(contactos['CEDULA_NEW'].unique())/len(cedulas_unicas)
-
-#Demanda
-len(demanda['CEDULA_NEW'].unique())
-len(demanda['CEDULA_NEW'].unique())/len(cedulas_unicas)
-
-#Llamadas
-len(llamada['CEDULA_NEW'].unique())
-len(llamada['CEDULA_NEW'].unique())/len(cedulas_unicas)
-
-#Eventos
-len(eventos['ID'].unique())
-
-#cuentas
-len(cuentas['CEDULA_NEW'].unique())
-len(cuentas['CEDULA_NEW'].unique())/len(cedulas_unicas)
-
-########## serie de tiempo de eventos
-
-#aplanar la lista de eventos
-flat_list = []
-for sublist in demanda['FECHAINSCRIPCIÓN'].str.split(',').to_list():
-    for item in sublist:
-        flat_list.append(item)
-
-#contar los eventos en plano
-x=Counter(flat_list)
-
-# Diccionario del conteo
-ordered_dict=OrderedDict(sorted(x.items()))
-#convertir fecha en js
-def fecha_js(fecha):
-    d = datetime.date(int(fecha.split('-')[0]), int(fecha.split('-')[1]), int(fecha.split('-')[2]))
-    for_js = int(time.mktime(d.timetuple())) * 1000
-    return for_js
-
-#print de la fecha
-for i in [[fecha_js(i[0]),i[1]] for i in list(ordered_dict.items())]:
-    print(i,',')
+# db.student.find({}, {roll:1, _id:0})
 
 
-########## onteo de tipo de eventos
+# ################################
+# #### COnsultas útiles ##########
+# ################################
 
-#aplanar la lista de eventos
-flat_list = []
-for sublist in demanda['TIPOACTIVIDAD'].str.split(',').to_list():
-    for item in sublist:
-        flat_list.append(item)
+# #cantidad clientes
+# len(cedulas_unicas)
 
-#contar los eventos en plano
-x=Counter(flat_list)
+# #Encuestas de experiencia
+# len(data_exp['CEDULA_NEW'].unique())
+# len(data_exp['CEDULA_NEW'].unique())/len(cedulas_unicas)
 
-#porcetnaje de asistencia
-[i/539180 for i in [33932, 361867, 456, 97108,45817]]
+# #Interes
+# len(interes['CEDULA_NEW'].unique())
+# len(interes['CEDULA_NEW'].unique())/len(cedulas_unicas)
 
-######### COnteo de temas
+# #Contactos
+# len(contactos['CEDULA_NEW'].unique())
+# len(contactos['CEDULA_NEW'].unique())/len(cedulas_unicas)
 
-#aplanar la lista de eventos
-flat_list = []
-for sublist in interes['TEMAS_INTERES'].dropna().str.split(',').to_list():
-    for item in sublist:
-        try:
-            if int(item) in dict_temas.keys():
-                flat_list.append(item)
-        except:
-            pass
+# #Demanda
+# len(demanda['CEDULA_NEW'].unique())
+# len(demanda['CEDULA_NEW'].unique())/len(cedulas_unicas)
 
-#contar los eventos en plano
-x=Counter(flat_list)
+# #Llamadas
+# len(llamada['CEDULA_NEW'].unique())
+# len(llamada['CEDULA_NEW'].unique())/len(cedulas_unicas)
 
-[i[0] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]]
+# #Eventos
+# len(eventos['ID'].unique())
+
+# #cuentas
+# len(cuentas['CEDULA_NEW'].unique())
+# len(cuentas['CEDULA_NEW'].unique())/len(cedulas_unicas)
+
+# ########## serie de tiempo de eventos
+
+# #aplanar la lista de eventos
+# flat_list = []
+# for sublist in demanda['FECHAINSCRIPCIÓN'].str.split(',').to_list():
+#     for item in sublist:
+#         flat_list.append(item)
+
+# #contar los eventos en plano
+# x=Counter(flat_list)
+
+# # Diccionario del conteo
+# ordered_dict=OrderedDict(sorted(x.items()))
+# #convertir fecha en js
+# def fecha_js(fecha):
+#     d = datetime.date(int(fecha.split('-')[0]), int(fecha.split('-')[1]), int(fecha.split('-')[2]))
+#     for_js = int(time.mktime(d.timetuple())) * 1000
+#     return for_js
+
+# #print de la fecha
+# for i in [[fecha_js(i[0]),i[1]] for i in list(ordered_dict.items())]:
+#     print(i,',')
+
+
+# ########## onteo de tipo de eventos
+
+# #aplanar la lista de eventos
+# flat_list = []
+# for sublist in demanda['TIPOACTIVIDAD'].str.split(',').to_list():
+#     for item in sublist:
+#         flat_list.append(item)
+
+# #contar los eventos en plano
+# x=Counter(flat_list)
+
+# #porcetnaje de asistencia
+# [i/539180 for i in [33932, 361867, 456, 97108,45817]]
+
+# ######### COnteo de temas
+
+# #aplanar la lista de eventos
+# flat_list = []
+# for sublist in interes['TEMAS_INTERES'].dropna().str.split(',').to_list():
+#     for item in sublist:
+#         try:
+#             if int(item) in dict_temas.keys():
+#                 flat_list.append(item)
+#         except:
+#             pass
+
+# #contar los eventos en plano
+# x=Counter(flat_list)
+
+# [i[0] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]]
     
-suma=sum([i[1] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]])
-[round(i/suma*100) for i in [i[1] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]]]
+# suma=sum([i[1] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]])
+# [round(i/suma*100) for i in [i[1] for i in [[dict_temas[int(i[0])],i[1]] for i in list(x.items())[0:10]]]]
     
-    print('{')
-    print(' x:"',i[0],'",')
-    print(' y:',round(i[1]/1000),',')
-    print('},')
+#     print('{')
+#     print(' x:"',i[0],'",')
+#     print(' y:',round(i[1]/1000),',')
+#     print('},')
 
 
-import random
-no_of_colors=len(list(x.items()))
-color=["#"+''.join([random.choice('0123456789ABCDEF') for i in range(6)])
-       for j in range(no_of_colors)]
+# import random
+# no_of_colors=len(list(x.items()))
+# color=["#"+''.join([random.choice('0123456789ABCDEF') for i in range(6)])
+#        for j in range(no_of_colors)]
 
 
-dsample=data_exp.sample(10000)
+# dsample=data_exp.sample(10000)
 
-data_exp.columns
+# data_exp.columns
 
-group_data=data_exp.groupby(['ORIGEN_CAT', 'CARGO_HOMOLOGO']).agg({'CEDULA_NEW':'count'}).reset_index()
+# group_data=data_exp.groupby(['ORIGEN_CAT', 'CARGO_HOMOLOGO']).agg({'CEDULA_NEW':'count'}).reset_index()
 
-group_data['ORIGEN_CAT']=group_data['ORIGEN_CAT'].apply(lambda x: dict_agrupacion[x])
-
-
-
-group_data=group_data.sort_values(by=['CARGO_HOMOLOGO'])
+# group_data['ORIGEN_CAT']=group_data['ORIGEN_CAT'].apply(lambda x: dict_agrupacion[x])
 
 
-group_data['CARGO_HOMOLOGO'].unique()
 
-group_data['CEDULA_NEW'].to_list()
+# group_data=group_data.sort_values(by=['CARGO_HOMOLOGO'])
+
+
+# group_data['CARGO_HOMOLOGO'].unique()
+
+# group_data['CEDULA_NEW'].to_list()
 
 
