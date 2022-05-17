@@ -44,7 +44,7 @@ if DEBUG:
 ################################
 #### Data de la ccma ###########
 ################################
-data=pd.read_csv('data_pr.csv')
+data=pd.read_csv('data_pr2.csv')
 
 
 
@@ -65,7 +65,7 @@ data=pd.read_csv('data_pr.csv')
 # Función para ejecutar el sistema de recomendación
 @app.route("/recomendation", methods=['GET', 'POST'])
 def index():
-    colours = ['Red', 'Blue', 'Black', 'Orange']
+    colours = ['Ev1', 'Ev2', 'Ev3', 'Ev4','Ev5','Ev6','Ev7','Ev8','Ev9']
     errors = []
     results = {}
     describe=data.describe(include='all').fillna('').reset_index()
@@ -90,6 +90,7 @@ def index():
                            results=results, 
                            colours=colours,
                            column_names=data.columns.values, 
+                           #Categorizar el RMSE
                            row_data=list(data.values.tolist()), 
                            column_names_desc=describe.columns.values, 
                            row_data_desc=list(describe.values.tolist()),
