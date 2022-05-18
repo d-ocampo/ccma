@@ -7,6 +7,7 @@ Created on Tue May 17 16:37:47 2022
 
 from data_load import cargar_todo,conectar_colection_mongo_ccma, crear_cedulas_base, dict_personas_pm
 import time
+from tqdm import tqdm
 ####################################
 
 #Cargar bases
