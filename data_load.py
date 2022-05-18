@@ -716,7 +716,7 @@ def crear_cedulas_base(data_exp,interes,contactos,demanda,llamada,cuentas):
 
 ### Creación de los diccionarios por persona
 
-def dict_personas_pm(tipo_id,ident):
+def dict_personas_pm(tipo_id,ident,data_exp,interes,contactos,demanda,llamada,cuentas):
     dict_personas={
     # Se debe convertir a string la unión entre tipo_doc - doc
     'identificación':str(tipo_id)+'-'+str(ident),
@@ -745,7 +745,8 @@ def dict_personas_pm(tipo_id,ident):
 #Base en mongo atlas
 def conectar_colection_mongo_ccma(coleccion,base):
     if base==1:
-        client = pymongo.MongoClient('hostname', 27017)
+        # client = pymongo.MongoClient('hostname', 27017)
+        client = pymongo.MongoClient('mongodb://localhost:27017')
     else:
         client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:WpyATG4YVumTaPEd@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
     #Cargar la base de ccma

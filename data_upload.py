@@ -18,19 +18,24 @@ cedulas=crear_cedulas_base(data_exp,interes,contactos,demanda,llamada,cuentas)
 #Conectar la colección elegida
 clientes_col=conectar_colection_mongo_ccma('clientes',1)
 
+
 #cargar la base una a una
 start_time = time.time()
 print('Inicia carga de cédulas')
+pbar = tqdm(total=len(cedulas)) # Init pbar
 count=0
 for i,j in cedulas:
+    #Conteo para ver el porcentaje
     count=count+1
-    print(round(count/len(cedulas)*100,3))
-    print(i,j)
     ced_no=[]
+    pbar.update(n=1)
     try:
         #insertar 1 a 1 cada registro
-        clientes_col.insert_one(dict_personas_pm(i,j))
+        clientes_col.insert_one(dict_personas_pm(i,j,data_exp, interes, contactos, demanda, llamada, cuentas))
+        #porcentaje de avance de la carga
+        # print(round(count/len(cedulas)*100,3),'%')
     except:
+        print('No entró')
         ced_no.append((i,j))
         continue
 # tiempo transcurrido
