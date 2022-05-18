@@ -19,12 +19,23 @@ cedulas=crear_cedulas_base(data_exp,interes,contactos,demanda,llamada,cuentas)
 #Conectar la colección elegida
 clientes_col=conectar_colection_mongo_ccma('clientes',1)
 
-
 #cargar la base una a una
 start_time = time.time()
 print('Inicia carga de cédulas')
 pbar = tqdm(total=len(cedulas)) # Init pbar
 count=0
+
+# Para sacar el listado de cédulas ya cargadas
+response = clientes_col.find({'identificación': {'$ne': ''}})
+cedulas_ya_cargadas = [doc['identificación'] for doc in response]
+cedulas_ya_cargadas = [(int(x.split('-')[0]),int(x.split('-')[1])) for x in cedulas_ya_cargadas]
+print('Cédulas ya cargadas: ', len(cedulas_ya_cargadas))
+
+#para filtrar las cédulas ya cargadas del listado de cédulas original
+cedulas = [registro for registro in cedulas if registro not in cedulas_ya_cargadas]
+print('Cédulas por cargar: ', len(cedulas))
+
+# Para cargar en la base de MongoDB
 for i,j in cedulas:
     #Conteo para ver el porcentaje
     count=count+1
