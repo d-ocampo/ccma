@@ -85,7 +85,7 @@
 										<select name="search_filter" id="search_filter" class="form-control" >
 											<option value="">Select Option</option>';
 											{% for row in colours %}
-												<option value="{{row}}">{{row}}</option>';    
+												<option value="{{row[0]}}">{{row[1]}}</option>';    
 											{% endfor %}
 											</select>
 											<br>
@@ -96,7 +96,6 @@
 												<label class="btn btn-secondary">
 												<input type="checkbox" name="contactos" value="Contactos" >
 												Contactos</label>
-
 												<label class="btn btn-secondary">
 												<input type="checkbox" name="interes" value="Intereses" >
 												Intereses</label>
@@ -104,13 +103,13 @@
 											
 										  <input type="number" name="cantidad" class="form-control" id="url-box" placeholder="Ingrese cantidad de clientes" >
 										</div>
-										<button type="submit" class="btn btn-primary">Obtener cantidad de clientes</button>
+										<button type="submit" class="btn btn-primary">Obtener listado de clientes</button>
 									  </form>
-									<div class="card-body">
+									<!-- <div class="card-body">
 										{% for result in results%}
 										<p>{{ result }}</p>
 										  {% endfor %}
-									</div>
+									</div> -->
 								</div>
 							</div>
 						</div>
@@ -134,7 +133,8 @@
 											  <tr>
 												<th><span>Usuario <a class="help" data-toggle="popover" title="Asistente" data-content="Usuario de la CCMA"><i class="feather icon-help-circle f-16"></i></a></span></th>
 												<th><span>Estimación <a class="help" data-toggle="popover" title="Asistente" data-content="Estimación de asistencia al evento"><i class="feather icon-help-circle f-16"></i></a></span></th>
-												<th><span>Grupo <a class="help" data-toggle="popover" title="Asistente" data-content="Grupo al que pertenece el usuario "><i class="feather icon-help-circle f-16"></i></a></span></th>
+												<th><span>Correo <a class="help" data-toggle="popover" title="Asistente" data-content="Grupo al que pertenece el usuario "><i class="feather icon-help-circle f-16"></i></a></span></th>
+												<th><span>Teléfono <a class="help" data-toggle="popover" title="Asistente" data-content="Grupo al que pertenece el usuario "><i class="feather icon-help-circle f-16"></i></a></span></th>
 											  </tr>
 											</thead>
 											<tbody>
@@ -180,6 +180,42 @@
 												  {% for col, row_ in zip(column_names_desc, row) %}
 												  <td>{{row_}}</td>
 												  {% endfor %}
+												</tr>
+												{% endfor %}
+											</tbody>
+											</table>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Eventos más relacionados en la lista -->
+				<div class="col-sm-12">
+					<div class="card">
+
+						<div class="card-header">
+							<h5>Eventos relacionados del listado</h5>
+						</div>
+						<div class="card-body">
+							<div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+								<div class="table-responsive">
+									<div class="customer-scroll" style="height:420px;position:relative;">
+										<table class="table table-hover m-b-0">
+											<thead>
+											<tr>
+												{% for col in column_names_most %}
+												<th>{{col}} </th>
+												{% endfor %}
+											</tr>
+											</thead>
+											<tbody>
+												{% for row in row_data_desc %}
+												<tr>
+												{% for col, row_ in zip(column_names_most, row) %}
+												<td>{{row_}}</td>
+												{% endfor %}
 												</tr>
 												{% endfor %}
 											</tbody>

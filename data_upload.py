@@ -18,6 +18,9 @@ cedulas=crear_cedulas_base(data_exp,interes,contactos,demanda,llamada,cuentas)
 
 #Conectar la colección elegida
 clientes_col=conectar_colection_mongo_ccma('clientes',1)
+eventos_col=conectar_colection_mongo_ccma('eventos',1)
+
+
 
 #cargar la base una a una
 start_time = time.time()
@@ -55,7 +58,15 @@ time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
 print(f"Tiempo transcurrido: {time_lapse}")
         
 
-
+#cargar la base una a una
+start_time = time.time()
+print('Inicia carga de eventos')
+for i in eventos['ID'].to_list():
+    ev_dict=eventos[eventos['ID']==i].to_dict('records')[0]
+    eventos_col.insert_one(ev_dict)
+# tiempo transcurrido
+time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
+print(f"Tiempo transcurrido: {time_lapse}")
 
 
 
