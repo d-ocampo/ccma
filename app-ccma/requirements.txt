@@ -114,7 +114,6 @@ python-language-server
 python-levenshtein
 python-utils
 pyxlsb
-regressors
 reverse-geocoder
 rope
 salib
