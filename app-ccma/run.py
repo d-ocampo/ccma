@@ -71,79 +71,79 @@ data = pd.read_csv('data_pr2.csv')
 # data_exp, interes, contactos, demanda, eventos, llamada, cuentas = cargar_todo(
 #     20)
 
-n = 20
+# n = 20
 
-interes = cargar_interes()
-interes = arreglar_interes(interes)
-interes = nulls_filter(n, interes)
-
-
-#### 4. Demanda #######################
-
-demanda = cargar_demanda()
-demanda, eventos = arreglar_demanda(demanda)
-demanda = nulls_filter(n, demanda)
+# interes = cargar_interes()
+# interes = arreglar_interes(interes)
+# interes = nulls_filter(n, interes)
 
 
-#### 5. Llamadas ######################
-llamada = carga_llamadas()
-llamada = arreglo_llamadas(llamada)
-llamada = nulls_filter(n, llamada)
+# #### 4. Demanda #######################
+
+# demanda = cargar_demanda()
+# demanda, eventos = arreglar_demanda(demanda)
+# demanda = nulls_filter(n, demanda)
 
 
-# Cruzar nombre de eventos con ID
-# Establecer a los eventos que han ido
-dem_base = demanda[['CEDULA_NEW', 'ID']]
-# Pasos para fusionar la base
-# Crear cada asistencia a lista
-dem_base_melt = dem_base.assign(ID=dem_base.ID.str.split(",")).sample(10000)
-
-# Separa el listado a filas
-dem_base_melt = dem_base_melt.ID.apply(pd.Series) \
-    .merge(dem_base_melt, right_index=True, left_index=True) \
-    .drop(["ID"], axis=1) \
-    .melt(id_vars=['CEDULA_NEW'], value_name="ID") \
-    .drop('variable', axis=1)
-
-# Variable binaria de asistencia
-dem_base_melt['ASISTENCIA'] = dem_base_melt['ID'].apply(
-    lambda x: 0 if pd.isna(x) else 1)
-# # Crear base para el SR
-demanda_base = dem_base_melt.rename(columns={'CEDULA_NEW': 'userID',
-                                             'ID': 'itemID',
-                                             'ASISTENCIA': 'rating'})
-
-# # Borrar la base para no consumir tanta memoria
-del(dem_base_melt)
-
-# ### eventos - llamadas
-llam_base = pd.merge(demanda, llamada, on=['CEDULA_NEW'], how="inner")
-llam_base = llam_base.dropna(subset=['ID', 'TEMA DEL SERVICIO1'])
+# #### 5. Llamadas ######################
+# llamada = carga_llamadas()
+# llamada = arreglo_llamadas(llamada)
+# llamada = nulls_filter(n, llamada)
 
 
-### eventos - intereses
-int_base = pd.merge(demanda, interes, on=['CEDULA_NEW'], how="inner")
-# Eliminar repetidos
-int_base = int_base.drop_duplicates(subset='CEDULA_NEW')
+# # Cruzar nombre de eventos con ID
+# # Establecer a los eventos que han ido
+# dem_base = demanda[['CEDULA_NEW', 'ID']]
+# # Pasos para fusionar la base
+# # Crear cada asistencia a lista
+# dem_base_melt = dem_base.assign(ID=dem_base.ID.str.split(",")).sample(10000)
+
+# # Separa el listado a filas
+# dem_base_melt = dem_base_melt.ID.apply(pd.Series) \
+#     .merge(dem_base_melt, right_index=True, left_index=True) \
+#     .drop(["ID"], axis=1) \
+#     .melt(id_vars=['CEDULA_NEW'], value_name="ID") \
+#     .drop('variable', axis=1)
+
+# # Variable binaria de asistencia
+# dem_base_melt['ASISTENCIA'] = dem_base_melt['ID'].apply(
+#     lambda x: 0 if pd.isna(x) else 1)
+# # # Crear base para el SR
+# demanda_base = dem_base_melt.rename(columns={'CEDULA_NEW': 'userID',
+#                                              'ID': 'itemID',
+#                                              'ASISTENCIA': 'rating'})
+
+# # # Borrar la base para no consumir tanta memoria
+# del(dem_base_melt)
+
+# # ### eventos - llamadas
+# llam_base = pd.merge(demanda, llamada, on=['CEDULA_NEW'], how="inner")
+# llam_base = llam_base.dropna(subset=['ID', 'TEMA DEL SERVICIO1'])
 
 
-##################################
-#### Sistemas de recomendación ###
-##################################
+# ### eventos - intereses
+# int_base = pd.merge(demanda, interes, on=['CEDULA_NEW'], how="inner")
+# # Eliminar repetidos
+# int_base = int_base.drop_duplicates(subset='CEDULA_NEW')
 
-###### Eventos - eventos
-####
-# Escala binaria
-reader = Reader(rating_scale=(0, 1))
-# obtener la base como se necesita
-data_e_e = Dataset.load_from_df(
-    demanda_base[['userID', 'itemID', 'rating']], reader)
 
-# Interés eventos
-####
-# resumir la base por evento-interés
-int_base = int_base.dropna(subset=['TEMAS_INTERES', 'ID'])
-int_base_g = int_base[['CEDULA_NEW', 'ID', 'TEMAS_INTERES']]
+# ##################################
+# #### Sistemas de recomendación ###
+# ##################################
+
+# ###### Eventos - eventos
+# ####
+# # Escala binaria
+# reader = Reader(rating_scale=(0, 1))
+# # obtener la base como se necesita
+# data_e_e = Dataset.load_from_df(
+#     demanda_base[['userID', 'itemID', 'rating']], reader)
+
+# # Interés eventos
+# ####
+# # resumir la base por evento-interés
+# int_base = int_base.dropna(subset=['TEMAS_INTERES', 'ID'])
+# int_base_g = int_base[['CEDULA_NEW', 'ID', 'TEMAS_INTERES']]
 
 
 # Conectar la base de datos
@@ -229,25 +229,37 @@ def recomendation():
         # contacto = request.form['contactos']
         # intereses = request.form['interes']
 
-        if request.form.get('eventos'):
-            print('entro a eventos')
+        # Cuando están activados los 3 eventos
+        if request.form.get('eventos') and request.form.get('contactos') and request.form.get('interes'):
+            print('activados los 3 eventos')
             n = results
-            df_cf, most = recomendacion_cf(
-                data_e_e, model_cf_e_e, filter, n)
-            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(lambda x: clientes_col.find_one({'identificación': '1-'+str(x)})[
-                'características']['EXPERIENCIA'][0]['CORREO_ELECTRONICO'])
-            df_cf['TELEFONO'] = df_cf['CEDULA_NEW'].apply(lambda x: clientes_col.find_one({'identificación': '1-'+str(x)})[
-                'características']['EXPERIENCIA'][0]['TELEFONO'])
-            df_cf['CLASIFICACION'] = df_cf['SCORE'].apply(
-                lambda x: volver_cat_prediccion(x, 0.5, False))
-            print(len(df_cf))
-            describe = df_cf.describe(
-                include='all').fillna('').reset_index()
-
-        # except:
-        #     errors.append(
-        #         "Unable to get URL. Please make sure it's valid and try again."
-        #     )
+            # df_cf, most = recomendacion_cf(
+            #     data_e_e, model_cf_e_e, filter, n)
+            # df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(lambda x: clientes_col.find_one({'identificación': '1-'+str(x)})[
+            #     'características']['EXPERIENCIA'][0]['CORREO_ELECTRONICO'])
+            # df_cf['TELEFONO'] = df_cf['CEDULA_NEW'].apply(lambda x: clientes_col.find_one({'identificación': '1-'+str(x)})[
+            #     'características']['EXPERIENCIA'][0]['TELEFONO'])
+            # df_cf['CLASIFICACION'] = df_cf['SCORE'].apply(
+            #     lambda x: volver_cat_prediccion(x, 0.5, False))
+            # print(len(df_cf))
+            # describe = df_cf.describe(
+            #     include='all').fillna('').reset_index()
+        #eventos - contactos
+        elif request.form.get('contactos') and request.form.get('eventos'):
+            print('eventos - contactos')
+        #contactos - interes
+        elif request.form.get('contactos') and request.form.get('interes'):
+            print('contactos - interes')
+        #eventos - interes
+        elif request.form.get('eventos') and request.form.get('interes'):
+            print('eventos - interes')
+        # eventos
+        elif request.form.get('eventos'):
+            print('evento')
+        elif request.form.get('contactos'):
+            print('contactos')
+        elif request.form.get('intereses'):
+            print('intereses')
     return render_template('/home/recomendation.html',
                            errors=errors,
                            #    results=results,
@@ -270,7 +282,7 @@ def recomendation():
 #     else:
 #         return render_template('/home/metadata.html')
 
-# Función para ejecutar el sistema de recomendación
+# Función para la búsqueda de personas puntuales
 
 
 @app.route("/search", methods=['GET', 'POST'])
