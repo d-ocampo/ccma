@@ -91,7 +91,7 @@
 											<br>
 											<div style="display: block;	margin: 0 auto;">
 												<label class="btn btn-secondary">
-												<input type="checkbox" name="eventos" value="Eventos" checked>
+												<input type="checkbox" name="eventos" value="Eventos" >
 												Eventos</label>
 												<label class="btn btn-secondary">
 												<input type="checkbox" name="contactos" value="Contactos" >
@@ -274,7 +274,7 @@
 											</tr>
 											</thead>
 											<tbody>
-												{% for row in row_data_desc %}
+												{% for row in row_data_most %}
 												<tr>
 												{% for col, row_ in zip(column_names_most, row) %}
 												<td>{{row_}}</td>
@@ -285,8 +285,8 @@
 											</table>
 									</div>
 								</div>
-
 							</div>
+							<p>{{persona}}</p>
 						</div>
 					</div>
 				</div>

@@ -180,9 +180,12 @@ def recomendacion_cf(data, algo, event, n):
         df_rec = df_rec.sample(n)
     else:
         df_rec = df_rec[df_rec['iid'] == event].sample(n)
+    # eventos más frecuentes
     most_freq = Counter(
         " ".join(df_rec["iid"].astype(str)).split()).most_common(20)
+    # eliminar vacíos
     df_rec = df_rec.fillna(0)
+    # calcular el score
     df_rec['SCORE'] = abs(df_rec['est']-df_rec['rui'])
     return df_rec[['uid', 'SCORE']].rename(columns={'uid': 'CEDULA_NEW'}), most_freq
 
@@ -222,7 +225,7 @@ def recomendacion_coseno(data, event, n, idf, tipo):
     if len(data) > 10000:
         data = data.sample(10000).reset_index()
     # Crear la columna de texto
-    if tipo == 'evento':
+    if tipo == 'interes':
         data['data_text'] = data.apply(lambda x: str(
             x['ID']+','+x['TEMAS_INTERES']).replace(",", " "), axis=1)
     elif tipo == 'llamada':
@@ -236,11 +239,12 @@ def recomendacion_coseno(data, event, n, idf, tipo):
 
     # Listado de cédulas que han ido al evento
     if len(data[data['ID'].str.contains(event)]['CEDULA_NEW']) == 0:
-        cedula_index = data['CEDULA_NEW'].sample(1)
+        cedula_index = data['CEDULA_NEW'].sample(1).to_list()
     else:
         cedula_index = data[data['ID'].str.contains(
             event)]['CEDULA_NEW'].sample(1).to_list()
 
+    print(cedula_index)
     # buscar el índice de esas cédulas para la matriz
     index_matriz = data[data['CEDULA_NEW'].isin(cedula_index)].index
 
@@ -250,12 +254,13 @@ def recomendacion_coseno(data, event, n, idf, tipo):
     similarity_score = sorted(
         similarity_score, key=lambda x: x[1], reverse=True)
     similarity_score = similarity_score[1:n]
+
     # buscar las cédulas con ese índice
     data_rec = data.iloc[[i[0] for i in similarity_score]]
     data_rec['SCORE'] = [i[1] for i in similarity_score]
     most_freq = Counter(
         " ".join(data_rec["ID"].replace(",", " ")).split()).most_common(20)
-    return data_rec[['CEDULA_NEW', 'SCORE']], most_freq
+    return data_rec[['CEDULA_NEW', 'SCORE']], most_freq, cedula_index
 
 
 ######################################
@@ -286,7 +291,7 @@ def recomendacion_coseno(data, event, n, idf, tipo):
 # cargar idf
 # idf_eventos_int = joblib.load('models/model_tfdidf interes - evento.pkl')
 
-# recomendacion_coseno(int_base_g,event,100,idf_eventos_int,'eventos')
+# df_cf,most,one=recomendacion_coseno(int_base_g,event,100,idf_eventos_int,'interes')
 
 # Llamadas
 
@@ -294,4 +299,4 @@ def recomendacion_coseno(data, event, n, idf, tipo):
 #     x['ID']+','+x['TEMA DEL SERVICIO1']).replace(",", " "), axis=1), 'tfdidf llamada - evento')
 # idf_eventos_llam = joblib.load('models/model_tfdidf llamada - evento.pkl')
 
-# recomendacion_coseno(llam_base[['CEDULA_NEW','ID','TEMA DEL SERVICIO1']],event,100,idf_eventos_llam,'llamada')
+# df_cf,most,one=recomendacion_coseno(llam_base[['CEDULA_NEW','ID','TEMA DEL SERVICIO1']],event,100,idf_eventos_llam,'llamada')
