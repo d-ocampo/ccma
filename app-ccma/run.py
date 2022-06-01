@@ -21,7 +21,7 @@ from surprise import Reader
 import joblib
 
 # Módulos de la app
-from data_load import cargar_todo, conectar_colection_mongo_ccma, cargar_interes, arreglar_interes, cargar_demanda, arreglar_demanda, carga_llamadas, arreglo_llamadas, nulls_filter
+from data_load import arreglar_data_exp, cargar_todo, conectar_colection_mongo_ccma, cargar_interes, arreglar_interes, cargar_demanda, arreglar_demanda, carga_llamadas, arreglo_llamadas, nulls_filter
 from recomendationsystems import recomendacion_cf, recomendacion_coseno, volver_cat_prediccion
 from data_query import datos_contacto, devolver_persona
 
@@ -250,7 +250,7 @@ def llave_dic_eventos(llave):
     try:
         value = dic_eventos[llave]
     except:
-        value = 'nan'
+        value = llave
     return value
 ################################
 ### Empiezan funciones app #####
@@ -278,7 +278,6 @@ def buscar(query):
 @app.route("/index")
 def index():
     clientes = 3423542
-
     # #Para obtener la cantidad de clientes
     # response = clientes_col.find({'CEDULA_NEW': {'$ne': ''}})
     # clientes = len([doc for doc in response])
@@ -311,16 +310,223 @@ def recomendation():
         # Cuando están activados los 3 eventos
         if request.form.get('eventos') and request.form.get('contactos') and request.form.get('interes'):
             print('activados los 3 eventos')
+            # eventos
+            df_cf, most = recomendacion_cf(
+                data_e_e, model_cf_e_e, filter, round(n/3))
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), True))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            df_cf_e = df_cf
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+            most_e = most
+            # interes
+            df_cf, most, one = recomendacion_coseno(int_base_g,  # base
+                                                    filter,  # evento seleccionado
+                                                    # cantidad de recomendaciones
+                                                    round(n/3),
+                                                    idf_eventos_int,  # modelo entrenado
+                                                    'interes'  # tipo de recomendación
+                                                    )
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), False))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+            df_cf_i = df_cf
+            most_i = most
+            # contactos
+            df_cf, most, one = recomendacion_coseno(llam_base[['CEDULA_NEW', 'ID', 'TEMA DEL SERVICIO1']],  # base
+                                                    filter,  # evento seleccionado
+                                                    # cantidad de recomendaciones
+                                                    round(n/3),
+                                                    idf_eventos_llam,  # modelo entrenado
+                                                    'llamada'  # tipo de recomendacion
+                                                    )
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), False))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+            # apend de las bases
+
+            df_cf = pd.concat([df_cf, df_cf_e], ignore_index=True)
+            most = pd.concat([most, most_e], ignore_index=True)
+
+            df_cf = pd.concat([df_cf, df_cf_i], ignore_index=True)
+            most = pd.concat([most, most_i], ignore_index=True)
+            # descripción de la base
+            describe = df_cf.describe(include='all').fillna('').reset_index()
 
         #eventos - contactos
         elif request.form.get('contactos') and request.form.get('eventos'):
             print('eventos - contactos')
+            # eventos
+            df_cf, most = recomendacion_cf(
+                data_e_e, model_cf_e_e, filter, round(n/2))
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), True))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            df_cf_e = df_cf
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+            most_e = most
+            # Contactos
+            df_cf, most, one = recomendacion_coseno(llam_base[['CEDULA_NEW', 'ID', 'TEMA DEL SERVICIO1']],  # base
+                                                    filter,  # evento seleccionado
+                                                    # cantidad de recomendaciones
+                                                    round(n/2),
+                                                    idf_eventos_llam,  # modelo entrenado
+                                                    'llamada'  # tipo de recomendacion
+                                                    )
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), False))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+
+            # apend de las bases
+
+            df_cf = pd.concat([df_cf, df_cf_e], ignore_index=True)
+            most = pd.concat([most, most_e], ignore_index=True)
+
+            # descripción de la base
+            describe = df_cf.describe(include='all').fillna('').reset_index()
         #contactos - interes
         elif request.form.get('contactos') and request.form.get('interes'):
             print('contactos - interes')
+            # interes
+            df_cf, most, one = recomendacion_coseno(int_base_g,  # base
+                                                    filter,  # evento seleccionado
+                                                    # cantidad de recomendaciones
+                                                    round(n/2),
+                                                    idf_eventos_int,  # modelo entrenado
+                                                    'interes'  # tipo de recomendación
+                                                    )
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), False))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+            df_cf_e = df_cf
+            most_e = most
+            # contactos
+            df_cf, most, one = recomendacion_coseno(llam_base[['CEDULA_NEW', 'ID', 'TEMA DEL SERVICIO1']],  # base
+                                                    filter,  # evento seleccionado
+                                                    # cantidad de recomendaciones
+                                                    round(n/2),
+                                                    idf_eventos_llam,  # modelo entrenado
+                                                    'llamada'  # tipo de recomendacion
+                                                    )
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), False))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+            # apend de las bases
+
+            df_cf = pd.concat([df_cf, df_cf_e], ignore_index=True)
+            most = pd.concat([most, most_e], ignore_index=True)
+
+            # descripción de la base
+            describe = df_cf.describe(include='all').fillna('').reset_index()
         #eventos - interes
         elif request.form.get('eventos') and request.form.get('interes'):
             print('eventos - interes')
+            # eventos
+            df_cf, most = recomendacion_cf(
+                data_e_e, model_cf_e_e, filter, round(n/2))
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), True))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            df_cf_e = df_cf
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+            most_e = most
+            # interes
+            df_cf, most, one = recomendacion_coseno(int_base_g,  # base
+                                                    filter,  # evento seleccionado
+                                                    # cantidad de recomendaciones
+                                                    round(n/2),
+                                                    idf_eventos_int,  # modelo entrenado
+                                                    'interes'  # tipo de recomendación
+                                                    )
+            # agregar columnas de formato
+            df_cf['SCORE'] = df_cf['SCORE'].apply(
+                lambda x: volver_cat_prediccion(x, max(df_cf['SCORE']), False))
+            df_cf['CORREO'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[1])
+            df_cf['TEL'] = df_cf['CEDULA_NEW'].apply(
+                lambda x: datos_contacto('1-'+str(x))[0])
+            # más relacionados
+            most = pd.DataFrame(most, columns=['Evento', 'conteo'])
+            most = most.dropna()
+            most['Evento'] = most['Evento'].apply(
+                lambda x: llave_dic_eventos(x))
+
+            # apend de las bases
+
+            df_cf = pd.concat([df_cf, df_cf_e], ignore_index=True)
+            most = pd.concat([most, most_e], ignore_index=True)
+
+            # descripción de la base
+            describe = df_cf.describe(include='all').fillna('').reset_index()
         # eventos
         elif request.form.get('eventos'):
             print('evento')
@@ -406,14 +612,27 @@ def recomendation():
 
 # FUnción para cargar tablas
 # Descomentar con los comentarios de la ccma
-# @app.route('/metadata', methods = ['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         f = request.files['file']
-#         f.save(secure_filename(f.filename))
-#         return render_template('/home/metadata.html')
-#     else:
-#         return render_template('/home/metadata.html')
+
+
+@app.route('/metadata', methods=['GET', 'POST'])
+def upload_file():
+    file_filter = request.form.get('file_filter')
+    if request.method == 'POST':
+        getFile = request.files['file']
+        try:
+            data = pd.read_csv(getFile)
+            # filtros según el tipo de base "Experiencia" "Lllamadas" "Cuentas" "Demanda" "Interés" "Relaciones"
+            if file_filter == "Experiencia":
+                arreglar_data_exp(data)
+        except Exception as e:
+            print(e)
+            return render_template('/home/metadata_fail.html')
+        print('entró el archivo', file_filter)
+
+        return render_template('/home/metadata_succes.html')
+    else:
+        # return render_template('/home/metadata_fail.html')
+        return render_template('/home/metadata.html')
 
 # Función para la búsqueda de personas puntuales
 

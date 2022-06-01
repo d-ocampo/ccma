@@ -20,6 +20,8 @@ from surprise.model_selection import train_test_split
 from sklearn.metrics.pairwise import cosine_similarity
 
 import joblib
+import random
+
 
 # modelo basado en contenido
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -249,7 +251,11 @@ def recomendacion_coseno(data, event, n, idf, tipo):
     index_matriz = data[data['CEDULA_NEW'].isin(cedula_index)].index
 
     # similarity_score is the list of index and similarity matrix
-    similarity_score = list(enumerate(similarity_matrix[index_matriz][0]))
+    if index_matriz > len(similarity_matrix):
+        similarity_score = list(
+            enumerate(similarity_matrix[[random.randint(0, len(similarity_matrix)-2)]][0]))
+    else:
+        similarity_score = list(enumerate(similarity_matrix[index_matriz][0]))
     # sort in descending order the similarity score of movie inputted with all the other movies
     similarity_score = sorted(
         similarity_score, key=lambda x: x[1], reverse=True)
