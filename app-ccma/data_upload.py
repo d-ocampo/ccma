@@ -44,29 +44,3 @@ for i,j in cedulas:
 time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
 print(f"Tiempo transcurrido: {time_lapse}")
         
-
-#cargar la base una a una
-start_time = time.time()
-print('Inicia carga de eventos')
-pbar = tqdm(total=len(cedulas)) # Init pbar
-count=0
-for i,j in cedulas:
-    #Conteo para ver el porcentaje
-    count=count+1
-    ced_no=[]
-    pbar.update(n=1)
-    try:
-        #insertar 1 a 1 cada registro
-        clientes_col.insert_one(dict_personas_pm(i,j,data_exp, interes, contactos, demanda, llamada, cuentas))
-        #porcentaje de avance de la carga
-        # print(round(count/len(cedulas)*100,3),'%')
-    except:
-        print('No entró')
-        ced_no.append((i,j))
-        continue
-# tiempo transcurrido
-time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))
-print(f"Tiempo transcurrido: {time_lapse}")
-
-
-

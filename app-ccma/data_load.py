@@ -714,6 +714,28 @@ def crear_cedulas_base(data_exp,interes,contactos,demanda,llamada,cuentas):
     return cedulas
 
 
+def crear_cedulas_carga(data):
+    ## Llave de la bd personas 
+    cedulas=[]
+    
+    # Ingresar las cédulas al vector único
+    # data experience    
+    try:
+        if 'TIPO DE DOCUMENTO' in data.columns:
+            tipo_doc=data['TIPO DE DOCUMENTO']
+        else:
+            tipo_doc=data['Tipo_documento_value']
+    except:
+        tipo_doc=[1]*len(data)
+        
+    #cuentas
+    cedulas.extend(list(zip(tipo_doc,data['CEDULA_NEW'])))
+    
+    #Obtener las únicas
+    cedulas=unique(cedulas)
+    return cedulas
+
+
 ### Creación de los diccionarios por persona
 
 def dict_personas_pm(tipo_id,ident,data_exp,interes,contactos,demanda,llamada,cuentas):

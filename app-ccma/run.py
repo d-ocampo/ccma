@@ -21,9 +21,9 @@ from surprise import Reader
 import joblib
 
 # Módulos de la app
-from data_load import arreglar_data_exp, cargar_todo, conectar_colection_mongo_ccma, cargar_interes, arreglar_interes, cargar_demanda, arreglar_demanda, carga_llamadas, arreglo_llamadas, nulls_filter
+from data_load import arreglar_cuentas, arreglar_data_exp, cargar_todo, conectar_colection_mongo_ccma, cargar_interes, arreglar_interes, cargar_demanda, arreglar_demanda, carga_llamadas, arreglo_llamadas, cargar_contactos, arreglar_contactos, nulls_filter, crear_cedulas_carga
 from recomendationsystems import recomendacion_cf, recomendacion_coseno, volver_cat_prediccion
-from data_query import datos_contacto, devolver_persona
+from data_query import datos_contacto, devolver_persona, buscar_existe, buscar_datos_existe, agregar_nuevo
 
 # Modelos entrenados
 # slope one cf
@@ -621,9 +621,31 @@ def upload_file():
         getFile = request.files['file']
         try:
             data = pd.read_csv(getFile)
-            # filtros según el tipo de base "Experiencia" "Lllamadas" "Cuentas" "Demanda" "Interés" "Relaciones"
+            # filtros según el tipo de base "Experiencia" "Llamadas" "Cuentas" "Demanda" "Interés" "Contactos"
             if file_filter == "Experiencia":
-                arreglar_data_exp(data)
+                data = arreglar_data_exp(data)
+            elif file_filter == "Llamadas":
+                data = arreglo_llamadas(data)
+            elif file_filter == "Cuentas":
+                data = arreglar_cuentas(data)
+            elif file_filter == "Demanda":
+                data = arreglar_demanda(data)
+            elif file_filter == "Interés":
+                data = arreglar_interes(data)
+            elif file_filter == "Contactos":
+                data = arreglar_contactos(data)
+            # Crear la lista de cédulas para la iteración de subida
+            cedulas_nuevas = [str(i[0])+'-'+str(i[1])
+                              for i in crear_cedulas_carga(data)]
+            # Iterar para búsqueda y creación
+            for i in cedulas_nuevas:
+                print(i)
+                if buscar_existe(i) == 0:
+                    agregar_nuevo(i, file_filter)
+                    print('Pasó:', i)
+                elif buscar_existe(i) == 1:
+                    buscar_datos_existe(i, file_filter)
+                    print('Pasó:', i)
         except Exception as e:
             print(e)
             return render_template('/home/metadata_fail.html')
