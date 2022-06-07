@@ -38,7 +38,7 @@ for i in eventos['ID'].unique():
         eventos_col.insert_one(eventos[eventos['ID']==i].to_dict('records'))
     except:
         print('No entró')
-        ev.append(i)
+        ev_no.append(i)
         continue
 # tiempo transcurrido
 time_lapse = time.strftime('%X', time.gmtime(time.time() - start_time))

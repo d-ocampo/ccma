@@ -641,10 +641,10 @@ def upload_file():
             for i in cedulas_nuevas:
                 print(i)
                 if buscar_existe(i) == 0:
-                    agregar_nuevo(i, file_filter)
+                    agregar_nuevo(i, file_filter, data, clientes_col)
                     print('Pasó:', i)
                 elif buscar_existe(i) == 1:
-                    buscar_datos_existe(i, file_filter)
+                    buscar_datos_existe(i, file_filter, data, clientes_col)
                     print('Pasó:', i)
         except Exception as e:
             print(e)
