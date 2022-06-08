@@ -5,7 +5,7 @@ Created on Mon Jun  6 23:38:33 2022
 
 @author: davidsaw
 """
-from data_load import cargar_todo,conectar_colection_mongo_ccma, crear_cedulas_base, dict_personas_pm,cargar_demanda
+from data_load import cargar_todo,conectar_colection_mongo_ccma, crear_cedulas_base, dict_personas_pm,cargar_demanda,arreglar_demanda
 import time
 from tqdm import tqdm
 ####################################
