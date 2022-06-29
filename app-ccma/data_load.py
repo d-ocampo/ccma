@@ -770,6 +770,7 @@ def conectar_colection_mongo_ccma(coleccion,base):
         # client = pymongo.MongoClient('hostname', 27017)
         client = pymongo.MongoClient('mongodb://localhost:27017')
     else:
+        #cambiar la dirección si se utiliza mongo
         client = pymongo.MongoClient("mongodb+srv://proyecto_uniandes:WpyATG4YVumTaPEd@cluster0.66yl3.mongodb.net/ccma?retryWrites=true&w=majority")
     #Cargar la base de ccma
     db = client['ccma']

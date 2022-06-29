@@ -109,6 +109,7 @@ from surprise import CoClustering
 # int_base_g = int_base[['CEDULA_NEW', 'ID', 'TEMAS_INTERES']]
 
 
+# Función se prueban los algortimos
 def probar_algoritmos(data, nombre):
     # Probar algoritmos
     benchmark = []
@@ -169,6 +170,8 @@ def get_Ui(iid):
     except ValueError:
         return 0
 
+# recomendación filtro colaborativo - evento-evento
+
 
 def recomendacion_cf(data, algo, event, n):
     binary_data, test = train_test_split(data, test_size=.2)
@@ -191,6 +194,8 @@ def recomendacion_cf(data, algo, event, n):
     df_rec['SCORE'] = abs(df_rec['est']-df_rec['rui'])
     return df_rec[['uid', 'SCORE']].rename(columns={'uid': 'CEDULA_NEW'}), most_freq
 
+# para categorizar la estimación de asistencia
+
 
 def volver_cat_prediccion(numero, maximo, inv):
     cat = ''
@@ -210,6 +215,8 @@ def volver_cat_prediccion(numero, maximo, inv):
         else:
             cat = 'Baja'
     return cat
+
+# matriz para similaridad del coseno (basado en contenido) interes - contactos
 
 
 def creacion_matrix_idf(data_text, nombre):
@@ -282,6 +289,7 @@ def recomendacion_coseno(data, event, n, idf, tipo):
 # cargar modelo
 # model_cf_e_e = joblib.load('models/model_modelo_evento_evento.pkl')
 
+# base de la recomendación
 # df_cf,most=recomendacion_cf(data_e_e, model_cf_e_e, 2428,100)
 
 
@@ -297,12 +305,15 @@ def recomendacion_coseno(data, event, n, idf, tipo):
 # cargar idf
 # idf_eventos_int = joblib.load('models/model_tfdidf interes - evento.pkl')
 
+# obtener base para recomendación
 # df_cf,most,one=recomendacion_coseno(int_base_g,event,100,idf_eventos_int,'interes')
 
 # Llamadas
 
+# matriz de términos idf
 # creacion_matrix_idf(llam_base.apply(lambda x: str(
 #     x['ID']+','+x['TEMA DEL SERVICIO1']).replace(",", " "), axis=1), 'tfdidf llamada - evento')
+# cargar modelo - matriz
 # idf_eventos_llam = joblib.load('models/model_tfdidf llamada - evento.pkl')
-
+# obtener la base de recomendación
 # df_cf,most,one=recomendacion_coseno(llam_base[['CEDULA_NEW','ID','TEMA DEL SERVICIO1']],event,100,idf_eventos_llam,'llamada')
